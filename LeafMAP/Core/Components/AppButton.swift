@@ -18,7 +18,7 @@ class AppButton: UIButton {
         super.init(frame: .zero)
         self.setTitle(title, for: .normal)
         self.setTitleColor(titleColor, for: .normal)
-        self.backgroundColor = isEnabled ? UIColor.green01 : UIColor.lightGray
+        self.backgroundColor = isEnabled ? UIColor.green01 : UIColor.disable
         
         // 안전하게 아이콘 처리
         if let iconName = icon, !iconName.isEmpty {
