@@ -36,7 +36,9 @@ class SelectMajorViewController: UIViewController {
         setupTextFieldObservers() // 실시간 감지
         updateNextButtonState()   // 초기 버튼 상태
     }
-    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        view.endEditing(true)
+    }
     //MARK: - Setup UI
     private func setupNavigationBar() {
         navigationBarManager.addBackButton(

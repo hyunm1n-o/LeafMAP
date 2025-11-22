@@ -10,12 +10,23 @@ import UIKit
 class CommonBoardViewController: UIViewController {
     // MARK: - Properties
     let navigationBarManager = NavigationManager()
-    let storeCategory: String = "맛집 게시판"
-
+    let storeCategory: String
+    
     // MARK: - View
-    private lazy var commonBoradView = CommonBoardView()
+    private lazy var commonBoradView = CommonBoardView().then {
+        $0.writeButton.addTarget(self, action: #selector(didTapWriteButton), for: .touchUpInside)
+    }
     
     // MARK: - init
+    init(storeCategory: String) {
+        self.storeCategory = storeCategory
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.addSubview(commonBoradView)
@@ -38,6 +49,12 @@ class CommonBoardViewController: UIViewController {
     @objc
     private func prevVC() {
         navigationController?.popViewController(animated: true)
+    }
+    
+    @objc
+    private func didTapWriteButton() {
+        let nextVC = AddPostViewController(storeCategory: storeCategory)
+        navigationController?.pushViewController(nextVC, animated: true)
     }
     
     //MARK: - Setup UI
@@ -93,6 +110,9 @@ extension CommonBoardViewController: UITableViewDelegate, UITableViewDataSource 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         print("게시글 \(indexPath.row + 1) 선택")
+        
+        let nextVC = PostDetailViewController(storeCategory: storeCategory)
+        navigationController?.pushViewController(nextVC, animated: true)
     }
     
     // 셀 높이

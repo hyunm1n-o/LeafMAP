@@ -26,12 +26,21 @@ class PostDetailViewController: UIViewController {
 
     // MARK: - Properties
     let navigationBarManager = NavigationManager()
-    let storeCategory: String = "맛집 게시판"
+    let storeCategory: String 
     
     // MARK: - View
     private lazy var postDetailView = PostDetailView()
     
     // MARK: - init
+    init(storeCategory: String) {
+        self.storeCategory = storeCategory
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.addSubview(postDetailView)

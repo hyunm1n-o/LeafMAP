@@ -34,8 +34,13 @@ class CompleteViewController: UIViewController {
     
     @objc
     private func goToHome() {
-        let nextVC = SignupViewController()
-        navigationController?.pushViewController(nextVC, animated: true)
+        let homeVC = HomeViewController()
+        let nav = UINavigationController(rootViewController: homeVC)
+        
+        if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let window = scene.windows.first {
+            window.rootViewController = nav
+            window.makeKeyAndVisible()
+        }
     }
-
 }

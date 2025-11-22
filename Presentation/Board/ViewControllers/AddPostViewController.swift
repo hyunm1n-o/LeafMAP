@@ -73,7 +73,7 @@ class AddPostViewController: UIViewController {
         
         navigationBarManager.setTitle(
             to: navigationItem,
-            title: storeCategory,
+            title: storeCategory + " - 게시글 작성",
             textColor: .gray900
         )
         

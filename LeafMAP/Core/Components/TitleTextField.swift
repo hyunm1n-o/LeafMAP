@@ -29,7 +29,7 @@ class TitleTextField: UIView {
         $0.layer.borderColor = UIColor.lightGray.cgColor
     }
     
-    private lazy var textField = UITextField().then {
+    public lazy var textField = UITextField().then {
         $0.font = .systemFont(ofSize: 16)
         $0.textColor = .black
         $0.clearButtonMode = .never

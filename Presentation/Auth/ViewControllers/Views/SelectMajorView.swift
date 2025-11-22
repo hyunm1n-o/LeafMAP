@@ -14,7 +14,9 @@ class SelectMajorView: UIView {
         $0.contentMode = .scaleAspectFill
     }
     
-    public let idTextField = TitleTextField(title: "닉네임", placeholder: "사용할 닉네임을 입력해 주세요")
+    public let idTextField = TitleTextField(title: "닉네임", placeholder: "사용할 닉네임을 입력해 주세요").then {
+        $0.textField.keyboardType = .alphabet
+    }
     public let majorDropDown = DropDownButton(title: "현재 학과", placeholder: "현재 학과를 선택해 주세요")
     public let hopeMajorDropDown = DropDownButton(title: "희망 학과", placeholder: "희망 학과를 선택해 주세요")
     

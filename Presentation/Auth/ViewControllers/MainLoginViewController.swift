@@ -30,8 +30,15 @@ class MainLoginViewController: UIViewController {
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        navigationController?.setNavigationBarHidden(false, animated: false)
+      navigationController?.isNavigationBarHidden = true // 뷰 컨트롤러가 나타날 때 숨기기
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+      navigationController?.isNavigationBarHidden = false // 뷰 컨트롤러가 사라질 때 나타내기
+    }
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        view.endEditing(true)
     }
     
     //MARK: - Functional
@@ -131,7 +138,14 @@ class MainLoginViewController: UIViewController {
         print("비밀번호: \(password)")
         
         // TODO: 로그인 API 호출
-        // TODO: 홈화면 이동
+        let homeVC = HomeViewController()
+        let nav = UINavigationController(rootViewController: homeVC)
+        
+        if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let window = scene.windows.first {
+            window.rootViewController = nav
+            window.makeKeyAndVisible()
+        }
     }
 
     

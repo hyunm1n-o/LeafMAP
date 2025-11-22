@@ -29,7 +29,9 @@ class SignupViewController: UIViewController {
         setupTextFieldObservers() // 실시간 입력 감지 연결
         updateNextButtonState()   // 초기 버튼 상태 설정
     }
-    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        view.endEditing(true)
+    }
     //MARK: - Functional
     //MARK: - Validation
     private func isValidId(_ id: String) -> Bool {
