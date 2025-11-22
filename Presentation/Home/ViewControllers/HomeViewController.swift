@@ -11,9 +11,9 @@ class HomeViewController: UIViewController {
     // MARK: - Properties
     //MARK: - Data
     private var tableviewData: [String] = [
-        "선배의 한마디 남기기",
-        "맛집 게시판 가기",
-        "나의 발자취 보기"
+        "선배의 한마디",
+        "맛집 게시판",
+        "나의 발자취 "
     ]
     
     // MARK: - View
