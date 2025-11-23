@@ -162,9 +162,12 @@ class SignupViewController: UIViewController {
         updateNextButtonState()
         
         if hasError { return }
-        
-        // 다음 화면 이동
+
+        // 다음 화면으로 데이터 전달
         let nextVC = SelectMajorViewController()
+        nextVC.loginId = id
+        nextVC.studentId = studentId
+        nextVC.password = password
         navigationController?.pushViewController(nextVC, animated: true)
     }
 

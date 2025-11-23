@@ -62,27 +62,11 @@ final class JustOneService: NetworkManager {
         data: JustOneLoginRequestDTO,
         completion: @escaping (Result<JustOneLoginResponse, NetworkError>) -> Void
     ) {
-        provider.request(.postLogin(data: data)) { result in
-            switch result {
-            case .success(let response):
-                do {
-                    let decoder = JSONDecoder()
-                    decoder.keyDecodingStrategy = .convertFromSnakeCase
-                    
-                    // ⭐ BaseResponse 안 씀
-                    let loginResponse = try decoder.decode(JustOneLoginResponse.self, from: response.data)
-                    completion(.success(loginResponse))
-                    
-                } catch {
-                    print("Login 디코딩 에러: \(error)")
-                    completion(.failure(.decodingError))
-                }
-                
-            case .failure(let error):
-                completion(.failure(.networkError(message: error.localizedDescription)))
-            }
-        }
+        request(
+            target: .postLogin(data: data),
+            decodingType: JustOneLoginResponse.self,
+            completion: completion
+        )
     }
 
 }
-

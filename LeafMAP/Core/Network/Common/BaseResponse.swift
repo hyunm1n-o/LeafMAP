@@ -12,6 +12,6 @@ struct BaseResponse<T: Decodable>: Decodable {
     let isSuccess: Bool
     let code: String
     let message: String
-    let result: T
+    let result: T?  // 에러 응답에는 result가 없을 수 있음
 }
 

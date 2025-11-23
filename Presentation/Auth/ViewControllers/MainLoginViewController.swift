@@ -43,28 +43,6 @@ class MainLoginViewController: UIViewController {
     }
     
     //MARK: - Network
-    func callPostSignup() {
-        let signupRequest = JustOneSignupRequestDTO(
-            loginId: "string",
-            password: "string",
-            nickname: "stiring",
-            studentId: "Dd",
-            major: "Dd",
-            desiredMajor: "dd"
-        )
-        
-        justOneService.postSignup(data: signupRequest, completion: { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .success(let data):
-                print("Success: \(data)")
-                
-            case .failure(let error):
-                print("Error: \(error.localizedDescription)")
-            }
-        })
-    }
-    
     func callPostLogin(id: String, password: String) {
         let loginRequest = JustOneLoginRequestDTO(
             loginId: id,
@@ -75,21 +53,31 @@ class MainLoginViewController: UIViewController {
             guard let self = self else { return }
             switch result {
             case .success(let data):
-                print("Success: \(data)")
+                print("✅ 로그인 성공!")
+                print("memberId: \(data.memberId)")
+                print("accessToken: \(data.accessToken)")
+
+                // 토큰 저장
+                TokenManager.shared.saveAccessToken(data.accessToken)
+
+                // 홈 화면으로 이동
                 let homeVC = HomeViewController()
                 let nav = UINavigationController(rootViewController: homeVC)
-                
+
                 if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                    let window = scene.windows.first {
                     window.rootViewController = nav
                     window.makeKeyAndVisible()
                 }
-                
+
             case .failure(let error):
                 print("Error: \(error.localizedDescription)")
-                if case .serverError(let statusCode, _) = error,
-                   statusCode == 404 {
-                    mainLoginView.idTextField.showError(message: "가입되지 않은 아이디 또는 학번입니다")
+                if case .serverError(let statusCode, let message) = error {
+                    if statusCode == 404 {
+                        mainLoginView.idTextField.showError(message: "가입되지 않은 아이디 또는 학번입니다")
+                    } else {
+                        mainLoginView.passwordTextField.showError(message: message)
+                    }
                 }
             }
         })

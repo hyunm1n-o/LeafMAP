@@ -21,18 +21,23 @@ extension NetworkManager {
                 do {
                     let decoder = JSONDecoder()
                     decoder.keyDecodingStrategy = .convertFromSnakeCase
-                    
+
                     // 공통 응답 구조로 먼저 디코딩
                     let baseResponse = try decoder.decode(BaseResponse<T>.self, from: response.data)
-                    
+
                     // isSuccess 확인
                     guard baseResponse.isSuccess else {
                         completion(.failure(.serverError(statusCode: response.statusCode, message: baseResponse.message)))
                         return
                     }
-                    
-                    // result만 추출해서 반환
-                    completion(.success(baseResponse.result))
+
+                    // result 확인 및 반환
+                    guard let result = baseResponse.result else {
+                        completion(.failure(.decodingError))
+                        return
+                    }
+
+                    completion(.success(result))
                 } catch {
                     print("디코딩 에러: \(error)")
                     completion(.failure(.decodingError))
@@ -66,21 +71,21 @@ extension NetworkManager {
                     completion(.success(nil))
                     return
                 }
-                
+
                 do {
                     let decoder = JSONDecoder()
                     decoder.keyDecodingStrategy = .convertFromSnakeCase
-                    
+
                     // 공통 응답 구조로 먼저 디코딩
                     let baseResponse = try decoder.decode(BaseResponse<T>.self, from: response.data)
-                    
+
                     // isSuccess 확인
                     guard baseResponse.isSuccess else {
                         completion(.failure(.serverError(statusCode: response.statusCode, message: baseResponse.message)))
                         return
                     }
-                    
-                    // result만 추출해서 반환
+
+                    // result 반환 (옵셔널 함수이므로 nil 허용)
                     completion(.success(baseResponse.result))
                 } catch {
                     print("디코딩 에러: \(error)")
@@ -146,16 +151,22 @@ extension NetworkManager {
                 do {
                     let decoder = JSONDecoder()
                     decoder.keyDecodingStrategy = .convertFromSnakeCase
-                    
+
                     // 공통 응답 구조로 먼저 디코딩
                     let baseResponse = try decoder.decode(BaseResponse<T>.self, from: response.data)
-                    
+
                     // isSuccess 확인
                     guard baseResponse.isSuccess else {
                         completion(.failure(.serverError(statusCode: response.statusCode, message: baseResponse.message)))
                         return
                     }
-                    
+
+                    // result 확인
+                    guard let result = baseResponse.result else {
+                        completion(.failure(.decodingError))
+                        return
+                    }
+
                     // Cache-Control 헤더에서 max-age 추출
                     var cacheTime: TimeInterval? = nil
                     if let cacheControl = response.response?.allHeaderFields["Cache-Control"] as? String {
@@ -170,9 +181,9 @@ extension NetworkManager {
                             }
                         }
                     }
-                    
-                    // result만 추출해서 반환
-                    completion(.success((baseResponse.result, cacheTime)))
+
+                    // result와 cacheTime 반환
+                    completion(.success((result, cacheTime)))
                 } catch {
                     print("디코딩 에러: \(error)")
                     completion(.failure(.decodingError))
@@ -192,4 +203,3 @@ extension NetworkManager {
         }
     }
 }
-
