@@ -9,7 +9,8 @@ import UIKit
 
 class MainLoginViewController: UIViewController {
     // MARK: - Properties
-
+    let justOneService = JustOneService()
+    
     // MARK: - View
     private lazy var mainLoginView = MainLoginView().then {
         $0.signupButton.addTarget(self, action: #selector(goToSignUp), for: .touchUpInside)
@@ -30,15 +31,68 @@ class MainLoginViewController: UIViewController {
     }
     
     override func viewWillAppear(_ animated: Bool) {
-      navigationController?.isNavigationBarHidden = true // 뷰 컨트롤러가 나타날 때 숨기기
+        navigationController?.isNavigationBarHidden = true // 뷰 컨트롤러가 나타날 때 숨기기
     }
-
+    
     override func viewWillDisappear(_ animated: Bool) {
-      navigationController?.isNavigationBarHidden = false // 뷰 컨트롤러가 사라질 때 나타내기
+        navigationController?.isNavigationBarHidden = false // 뷰 컨트롤러가 사라질 때 나타내기
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         view.endEditing(true)
+    }
+    
+    //MARK: - Network
+    func callPostSignup() {
+        let signupRequest = JustOneSignupRequestDTO(
+            loginId: "string",
+            password: "string",
+            nickname: "stiring",
+            studentId: "Dd",
+            major: "Dd",
+            desiredMajor: "dd"
+        )
+        
+        justOneService.postSignup(data: signupRequest, completion: { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let data):
+                print("Success: \(data)")
+                
+            case .failure(let error):
+                print("Error: \(error.localizedDescription)")
+            }
+        })
+    }
+    
+    func callPostLogin(id: String, password: String) {
+        let loginRequest = JustOneLoginRequestDTO(
+            loginId: id,
+            password: password
+        )
+        
+        justOneService.postLogin(data: loginRequest, completion: { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let data):
+                print("Success: \(data)")
+                let homeVC = HomeViewController()
+                let nav = UINavigationController(rootViewController: homeVC)
+                
+                if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                   let window = scene.windows.first {
+                    window.rootViewController = nav
+                    window.makeKeyAndVisible()
+                }
+                
+            case .failure(let error):
+                print("Error: \(error.localizedDescription)")
+                if case .serverError(let statusCode, _) = error,
+                   statusCode == 404 {
+                    mainLoginView.idTextField.showError(message: "가입되지 않은 아이디 또는 학번입니다")
+                }
+            }
+        })
     }
     
     //MARK: - Functional
@@ -138,14 +192,8 @@ class MainLoginViewController: UIViewController {
         print("비밀번호: \(password)")
         
         // TODO: 로그인 API 호출
-        let homeVC = HomeViewController()
-        let nav = UINavigationController(rootViewController: homeVC)
+        callPostLogin(id: id, password: password)
         
-        if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let window = scene.windows.first {
-            window.rootViewController = nav
-            window.makeKeyAndVisible()
-        }
     }
 
     

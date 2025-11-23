@@ -6,3 +6,20 @@
 //
 
 import Foundation
+
+struct PostCreateRequestDTO: Codable {
+    let title: String
+    let content: String
+    let address: String
+}
+
+struct PostUpdateRequestDTO: Codable {
+    let title: String
+    let content: String
+    let address: String
+}
+
+struct PostCommentRequestDTO: Codable {
+    let content: String
+    let parentId: Int
+}
