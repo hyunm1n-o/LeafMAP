@@ -8,7 +8,16 @@
     <dict>
         <key>NSExceptionDomains</key>
         <dict>
+            <!-- API 서버 -->
             <key>13.209.64.76</key>
+            <dict>
+                <key>NSExceptionAllowsInsecureHTTPLoads</key>
+                <true/>
+                <key>NSIncludesSubdomains</key>
+                <true/>
+            </dict>
+            <!-- S3 이미지 서버 추가 -->
+            <key>leafmap-skuniv.s3.amazonaws.com</key>
             <dict>
                 <key>NSExceptionAllowsInsecureHTTPLoads</key>
                 <true/>

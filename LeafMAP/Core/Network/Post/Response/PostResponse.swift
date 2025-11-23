@@ -65,13 +65,14 @@ struct PostCommentDTO: Codable {
     let createdAt: String
 }
 
-struct RestaurantPostPreviewDTO: Codable {
-    let postId: Int
-    let imageUrl: String
-}
-
+// 맛집 게시판 홈 화면 조회
 struct RestaurantPostListResponseDTO: Codable {
     let posts: [RestaurantPostPreviewDTO]
+}
+
+struct RestaurantPostPreviewDTO: Codable {
+    let postId: Int
+    let imageUrl: String?
 }
 
 struct PostLikeResponseDTO: Codable {

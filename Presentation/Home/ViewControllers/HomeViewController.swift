@@ -10,6 +10,7 @@ import UIKit
 class HomeViewController: UIViewController {
     // MARK: - Properties
     let memberService = MemberService()
+    let postService = PostService()
     
     //MARK: - Data
     private var tableviewData: [String] = [
@@ -43,9 +44,11 @@ class HomeViewController: UIViewController {
         
         setDelegate()
     }
+    
     override func viewWillAppear(_ animated: Bool) {
       navigationController?.isNavigationBarHidden = true // 뷰 컨트롤러가 나타날 때 숨기기
         callGetMember()
+        callGetRESPhoto()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -69,10 +72,28 @@ class HomeViewController: UIViewController {
         })
     }
     
+    func callGetRESPhoto() {
+        postService.getRestaurantHome(completion: { [weak self] result in
+            guard let self = self else { return }
+            
+            switch result {
+            case .success(let data):
+                self.homeView.restaurantPosts = data.posts
+                print("맛집 이미지 \(data.posts.count)개 로드")
+                
+            case .failure(let error):
+                print("맛집 이미지 로드 실패: \(error.localizedDescription)")
+            }
+        })
+    }
+    
     // MARK: - Functional
     private func setDelegate() {
         homeView.homeTableView.delegate = self
         homeView.homeTableView.dataSource = self
+        
+        homeView.storeCollectionView.delegate = self
+        homeView.storeCollectionView.dataSource = self
     }
     
     // MARK: Event
@@ -112,7 +133,7 @@ class HomeViewController: UIViewController {
 }
 
 
-// MARK: - Extension
+// MARK: - TableView Extension
 extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return tableviewData.count
@@ -148,5 +169,36 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
         default:
             break
         }
+    }
+}
+
+// MARK: - CollectionView Extension
+extension HomeViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return homeView.restaurantPosts.count
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        guard let cell = collectionView.dequeueReusableCell(
+            withReuseIdentifier: StoreCollectionViewCell.identifier,
+            for: indexPath
+        ) as? StoreCollectionViewCell else {
+            return UICollectionViewCell()
+        }
+        
+        let post = homeView.restaurantPosts[indexPath.item]
+        cell.configure(with: post.imageUrl)
+        
+        return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        return CGSize(width: 100, height: 100)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let post = homeView.restaurantPosts[indexPath.item]
+        print("맛집 포스트 클릭: \(post.postId)")
+        // TODO: 상세 화면으로 이동
     }
 }

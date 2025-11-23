@@ -21,10 +21,11 @@ class HomeView: UIView {
         }
     }
     
-    private func updateGreetingLabel() {
-        let fullText = "\(name)님, 반가워요!🌱"
-        greetingLabel.text = fullText
-        greetingLabel.asColor(targetString: name, color: .green02)
+    // 맛집 이미지 데이터
+    public var restaurantPosts: [RestaurantPostPreviewDTO] = [] {
+        didSet {
+            storeCollectionView.reloadData()
+        }
     }
     
     //MARK: - Components
@@ -90,10 +91,9 @@ class HomeView: UIView {
         $0.isScrollEnabled = true
         $0.backgroundColor = .clear
         $0.showsVerticalScrollIndicator = false
+        $0.showsHorizontalScrollIndicator = false
         $0.register(StoreCollectionViewCell.self, forCellWithReuseIdentifier: StoreCollectionViewCell.identifier)
         $0.translatesAutoresizingMaskIntoConstraints = false
-    }.then {
-        $0.backgroundColor = .yellow
     }
     
     // - 나의 풀잎
@@ -128,6 +128,12 @@ class HomeView: UIView {
     }
     
     //MARK: - SetUI
+    private func updateGreetingLabel() {
+        let fullText = "\(name)님, 반가워요!🌱"
+        greetingLabel.text = fullText
+        greetingLabel.asColor(targetString: name, color: .green02)
+    }
+    
     private func setView() {
         addSubviews([greetingLabel, sub, editInfoButton, firstLabel, tipHorizonStackView, tipTwoHorizonStackView, secondLabel, storeCollectionView, thirdLabel, homeTableView, chatBotButton])
         tipHorizonStackView.addArrangedSubViews([majorSelectTipView, shortLoadTipView])
@@ -173,6 +179,8 @@ class HomeView: UIView {
         storeCollectionView.snp.makeConstraints {
             $0.top.equalTo(secondLabel.snp.bottom).offset(8)
             $0.leading.equalToSuperview().inset(24)
+            $0.trailing.equalToSuperview()
+            $0.height.equalTo(100)
         }
         
         thirdLabel.snp.makeConstraints {
