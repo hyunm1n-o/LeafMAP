@@ -48,7 +48,7 @@ class PostDetailViewController: UIViewController {
         setupNavigationBar()
         setDelegate()
         addTapGestureToDismissKeyboard()
-        callGetBoardList()
+        callGetBoardDetail()
     }
     
     deinit {
@@ -57,7 +57,7 @@ class PostDetailViewController: UIViewController {
     
     
     // MARK: - Network
-    func callGetBoardList() {
+    func callGetBoardDetail() {
         postService.getPostDetail(
             boardType: boardCategory,
             postId: postId,

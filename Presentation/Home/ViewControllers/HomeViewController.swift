@@ -200,5 +200,7 @@ extension HomeViewController: UICollectionViewDelegate, UICollectionViewDataSour
         let post = homeView.restaurantPosts[indexPath.item]
         print("맛집 포스트 클릭: \(post.postId)")
         // TODO: 상세 화면으로 이동
+        let nextVC = StoreDetailViewController(postId: post.postId)
+        navigationController?.pushViewController(nextVC, animated: true)
     }
 }

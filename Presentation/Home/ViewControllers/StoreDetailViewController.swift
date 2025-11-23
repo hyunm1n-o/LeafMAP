@@ -9,14 +9,27 @@ import UIKit
 
 class StoreDetailViewController: UIViewController {
     // MARK: - Properties
+    let postService = PostService()
     let navigationBarManager = NavigationManager()
-    let storeName: String = "경성마라탕"
+    let postId: Int
+    
+    private var postDetail: PostDetailResponseDTO?
+    
     // MARK: - View
     private lazy var storeDetailView = StoreDetailView().then {
         $0.recommendButton.addTarget(self, action: #selector(didTapRecommend), for: .touchUpInside)
     }
     
     // MARK: - init
+    init(postId: Int) {
+        self.postId = postId
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.addSubview(storeDetailView)
@@ -26,7 +39,46 @@ class StoreDetailViewController: UIViewController {
         }
         
         setupNavigationBar()
+        callGetBoardDetail()
     }
+    
+    //MARK: - Network
+    func callGetBoardDetail() {
+        postService.getPostDetail(
+            boardType: "RESTAURANT",
+            postId: postId,
+            completion: { [weak self] result in
+                guard let self = self else { return }
+                
+                switch result {
+                case .success(let data):
+                    self.postDetail = data
+                    self.updateUI(with: data)
+                    print("✅ 맛집 상세 로드 성공")
+                case .failure(let error):
+                    print("❌ Error: \(error.localizedDescription)")
+                }
+            })
+    }
+    
+    private func updateUI(with data: PostDetailResponseDTO) {
+        // 네비게이션 타이틀 업데이트
+        navigationBarManager.setTitle(
+            to: navigationItem,
+            title: data.title,
+            textColor: .gray900
+        )
+        
+        // 뷰 업데이트
+        storeDetailView.configure(
+            title: data.title,
+            address: data.address,
+            imageUrl: data.imageUrl,
+            likeCount: data.likeCount,
+            isLiked: data.isLiked
+        )
+    }
+    
     //MARK: - Event
     @objc
     private func prevVC() {
@@ -35,6 +87,7 @@ class StoreDetailViewController: UIViewController {
     
     @objc
     private func didTapRecommend() {
+        // TODO: 좋아요 API 호출
         storeDetailView.recommendButton.isSelected.toggle()
         
         if storeDetailView.recommendButton.isSelected {
@@ -43,6 +96,7 @@ class StoreDetailViewController: UIViewController {
             print("추천 OFF")
         }
     }
+    
     //MARK: - Setup UI
     private func setupNavigationBar() {
         navigationBarManager.addBackButton(
@@ -54,7 +108,7 @@ class StoreDetailViewController: UIViewController {
         
         navigationBarManager.setTitle(
             to: navigationItem,
-            title: storeName,
+            title: "로딩 중...",  // 임시 타이틀
             textColor: .gray900
         )
         
