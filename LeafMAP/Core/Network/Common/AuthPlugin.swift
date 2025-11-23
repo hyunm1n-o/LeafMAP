@@ -33,7 +33,7 @@ final class AuthPlugin: PluginType {
         switch result {
         case .success(let response):
             // 401 에러인 경우 토큰 만료로 간주하고 자동 로그아웃
-            if response.statusCode == 401 {
+            if response.statusCode == 403 {
                 print("⚠️ 401 Unauthorized - 토큰 만료로 인한 자동 로그아웃")
                 DispatchQueue.main.async {
                     self.forceLogout()

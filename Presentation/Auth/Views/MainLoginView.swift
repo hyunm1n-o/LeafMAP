@@ -27,7 +27,7 @@ class MainLoginView: UIView {
         $0.textAlignment = .left
     }
     
-    public lazy var idTextField = AppTextField(iconName: "ID", placeholder: "아이디 및 학번을 입력해 주세요")
+    public lazy var idTextField = AppTextField(iconName: "ID", placeholder: "아이디를 입력해 주세요")
     public lazy var passwordTextField = AppTextField(iconName: "Password", placeholder: "비밀번호를 입력해 주세요").then {
         $0.setSecureTextEntry(true)
     }

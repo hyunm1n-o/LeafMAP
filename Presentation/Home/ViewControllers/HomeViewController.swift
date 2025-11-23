@@ -9,6 +9,8 @@ import UIKit
 
 class HomeViewController: UIViewController {
     // MARK: - Properties
+    let memberService = MemberService()
+    
     //MARK: - Data
     private var tableviewData: [String] = [
         "선배의 한마디",
@@ -43,10 +45,28 @@ class HomeViewController: UIViewController {
     }
     override func viewWillAppear(_ animated: Bool) {
       navigationController?.isNavigationBarHidden = true // 뷰 컨트롤러가 나타날 때 숨기기
+        callGetMember()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
       navigationController?.isNavigationBarHidden = false // 뷰 컨트롤러가 사라질 때 나타내기
+    }
+    
+    // MARK: - Network
+    func callGetMember() {
+        memberService.getMember(completion: { [weak self] result in
+            guard let self = self else { return }
+            
+            switch result {
+            case .success(let data):
+                homeView.name = data.nickname
+                homeView.major = data.major
+                print(data.nickname, data.major)
+               
+            case .failure(let error):
+                print("Error: \(error.localizedDescription)")
+            }
+        })
     }
     
     // MARK: - Functional

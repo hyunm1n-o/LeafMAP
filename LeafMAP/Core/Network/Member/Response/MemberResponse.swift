@@ -8,12 +8,12 @@
 import Foundation
 
 struct MemberPatchResponseDTO: Codable {
-    let memberID: Int
+    let memberId: Int
     let nickname, major, desiredMajor: String
 }
 
 struct MemberGetResponseDTO: Codable {
-    let memberID: Int
+    let memberId: Int
     let nickname, major, desiredMajor: String
 }
 

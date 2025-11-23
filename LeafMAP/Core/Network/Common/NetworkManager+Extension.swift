@@ -18,28 +18,42 @@ extension NetworkManager {
         provider.request(target) { result in
             switch result {
             case .success(let response):
+                // ✅ 디버깅 정보 출력
+                print("🌐 요청 URL: \(response.request?.url?.absoluteString ?? "unknown")")
+                print("📊 상태 코드: \(response.statusCode)")
+                
+                guard !response.data.isEmpty else {
+                    print("⚠️ 서버로부터 빈 응답을 받았습니다.")
+                    // 204 No Content는 정상적인 빈 응답
+                    if response.statusCode == 204 {
+                        print("ℹ️ 204 No Content - 정상적인 빈 응답")
+                    }
+                    completion(.failure(.decodingError))
+                    return
+                }
+                
+                if let jsonString = String(data: response.data, encoding: .utf8) {
+                    print("📥 응답 데이터: \(jsonString)")
+                }
+                
                 do {
                     let decoder = JSONDecoder()
                     decoder.keyDecodingStrategy = .convertFromSnakeCase
-
-                    // 공통 응답 구조로 먼저 디코딩
                     let baseResponse = try decoder.decode(BaseResponse<T>.self, from: response.data)
-
-                    // isSuccess 확인
+                    
                     guard baseResponse.isSuccess else {
                         completion(.failure(.serverError(statusCode: response.statusCode, message: baseResponse.message)))
                         return
                     }
-
-                    // result 확인 및 반환
+                    
                     guard let result = baseResponse.result else {
                         completion(.failure(.decodingError))
                         return
                     }
-
+                    
                     completion(.success(result))
                 } catch {
-                    print("디코딩 에러: \(error)")
+                    print("❌ 디코딩 에러: \(error)")
                     completion(.failure(.decodingError))
                 }
             case .failure(let error):
@@ -71,20 +85,20 @@ extension NetworkManager {
                     completion(.success(nil))
                     return
                 }
-
+                
                 do {
                     let decoder = JSONDecoder()
                     decoder.keyDecodingStrategy = .convertFromSnakeCase
-
+                    
                     // 공통 응답 구조로 먼저 디코딩
                     let baseResponse = try decoder.decode(BaseResponse<T>.self, from: response.data)
-
+                    
                     // isSuccess 확인
                     guard baseResponse.isSuccess else {
                         completion(.failure(.serverError(statusCode: response.statusCode, message: baseResponse.message)))
                         return
                     }
-
+                    
                     // result 반환 (옵셔널 함수이므로 nil 허용)
                     completion(.success(baseResponse.result))
                 } catch {
@@ -151,22 +165,22 @@ extension NetworkManager {
                 do {
                     let decoder = JSONDecoder()
                     decoder.keyDecodingStrategy = .convertFromSnakeCase
-
+                    
                     // 공통 응답 구조로 먼저 디코딩
                     let baseResponse = try decoder.decode(BaseResponse<T>.self, from: response.data)
-
+                    
                     // isSuccess 확인
                     guard baseResponse.isSuccess else {
                         completion(.failure(.serverError(statusCode: response.statusCode, message: baseResponse.message)))
                         return
                     }
-
+                    
                     // result 확인
                     guard let result = baseResponse.result else {
                         completion(.failure(.decodingError))
                         return
                     }
-
+                    
                     // Cache-Control 헤더에서 max-age 추출
                     var cacheTime: TimeInterval? = nil
                     if let cacheControl = response.response?.allHeaderFields["Cache-Control"] as? String {
@@ -181,7 +195,7 @@ extension NetworkManager {
                             }
                         }
                     }
-
+                    
                     // result와 cacheTime 반환
                     completion(.success((result, cacheTime)))
                 } catch {

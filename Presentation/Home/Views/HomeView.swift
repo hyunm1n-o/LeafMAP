@@ -9,8 +9,24 @@ import UIKit
 
 class HomeView: UIView {
     //MARK: - Properties
-    private var name: String = "김서경"
-    private var major: String = "미래융합학부"
+    public var name: String = "" {
+        didSet {
+            updateGreetingLabel()
+        }
+    }
+    
+    public var major: String = "" {
+        didSet {
+            sub.text = major
+        }
+    }
+    
+    private func updateGreetingLabel() {
+        let fullText = "\(name)님, 반가워요!🌱"
+        greetingLabel.text = fullText
+        greetingLabel.asColor(targetString: name, color: .green02)
+    }
+    
     //MARK: - Components
     private lazy var greetingLabel = AppLabel(text: "\(name)님, 반가워요!🌱",
                                               font: UIFont(name: AppFontName.pSemiBold, size: 24)!,
@@ -45,7 +61,7 @@ class HomeView: UIView {
         $0.axis = .horizontal
         $0.distribution = .fillEqually
         $0.spacing = 12
-
+        
     }
     
     public let majorSelectTipView = SquareView(title: "학과 선택 꿀팁",
