@@ -16,10 +16,20 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         window = UIWindow(windowScene: windowScene)
         
-        let mainVC = MainLoginViewController()
-        let navigationController = UINavigationController(rootViewController: mainVC)
+        // 토큰 확인하여 초기 화면 결정
+        let rootViewController: UIViewController
         
-        window?.rootViewController = navigationController
+        if TokenManager.shared.hasAccessToken() {
+            // 토큰이 있으면 홈 화면
+            let homeVC = HomeViewController()
+            rootViewController = UINavigationController(rootViewController: homeVC)
+        } else {
+            // 토큰이 없으면 로그인 화면
+            let loginVC = MainLoginViewController()
+            rootViewController = UINavigationController(rootViewController: loginVC)
+        }
+        
+        window?.rootViewController = rootViewController
         window?.makeKeyAndVisible()
     }
 
