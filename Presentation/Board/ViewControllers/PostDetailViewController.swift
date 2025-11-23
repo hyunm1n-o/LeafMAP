@@ -7,33 +7,28 @@
 
 import UIKit
 
-struct Comment {
-    let nickname: String
-    let content: String
-    let depth: Int   // 0 = 댓글, 1 = 대댓글, 2 = 대대댓글...
-    let isAuthor: Bool
-}
-
 class PostDetailViewController: UIViewController {
-    private var comments: [Comment] = [
-        Comment(nickname: "철수 | 2024.10.05", content: "첫 댓글입니다", depth: 0, isAuthor: true),
-        Comment(nickname: "민수 | 2024.10.05", content: "첫 댓글에 대한 대댓글", depth: 1, isAuthor: false),
-        Comment(nickname: "영희 | 2024.10.05", content: "첫 댓글의 또 다른 대댓글", depth: 1, isAuthor: false),
-        Comment(nickname: "보라 | 2024.10.05", content: "두번째 댓글입니다", depth: 0, isAuthor: false),
-        Comment(nickname: "준호 | 2024.10.05", content: "두번째 댓글의 대댓글", depth: 1, isAuthor: false),
-        Comment(nickname: "나래 | 2024.10.05", content: "세번째 댓글입니다", depth: 0, isAuthor: false)
-    ]
-
     // MARK: - Properties
+    let postService = PostService()
     let navigationBarManager = NavigationManager()
-    let storeCategory: String 
+    let boardCategory: String
+    let postId: Int
+    
+    // 게시글 데이터 & 댓글 데이터
+    private var postDetail: PostDetailResponseDTO?
+    private var comments: [PostCommentDTO] = []
     
     // MARK: - View
-    private lazy var postDetailView = PostDetailView()
+    private lazy var postDetailView = PostDetailView().then {
+        $0.recommendButton.addTarget(self, action: #selector(didTapRecommend), for: .touchUpInside)
+        $0.editButton.addTarget(self, action: #selector(didTapEdit), for: .touchUpInside)
+        $0.sendButton.addTarget(self, action: #selector(didTapSendComment), for: .touchUpInside)
+    }
     
     // MARK: - init
-    init(storeCategory: String) {
-        self.storeCategory = storeCategory
+    init(boardCategory: String, postId: Int) {
+        self.boardCategory = boardCategory
+        self.postId = postId
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -53,17 +48,34 @@ class PostDetailViewController: UIViewController {
         setupNavigationBar()
         setDelegate()
         addTapGestureToDismissKeyboard()
-        
-        // 테스트: 뱃지 숨기기 / 주소 숨기기
-        postDetailView.setBadgeHidden(true)
-        postDetailView.setLocationHidden(true)
-        postDetailView.setEditHidden(false)
+        callGetBoardList()
     }
     
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
     
+    
+    // MARK: - Network
+    func callGetBoardList() {
+        postService.getPostDetail(
+            boardType: boardCategory,
+            postId: postId,
+            completion: { [weak self] result in
+                guard let self = self else { return }
+                
+                switch result {
+                case .success(let data):
+                    self.postDetail = data
+                    self.comments = data.comments
+                    self.updateUI(with: data)
+                    self.postDetailView.commentTableView.reloadData()
+                    print("✅ 게시글 상세 로드 성공")
+                case .failure(let error):
+                    print("❌ Error: \(error.localizedDescription)")
+                }
+            })
+    }
     
     // MARK: - Functional
     private func setDelegate() {
@@ -77,6 +89,29 @@ class PostDetailViewController: UIViewController {
         navigationController?.popViewController(animated: true)
     }
     
+    @objc
+    private func didTapRecommend() {
+        // TODO: 좋아요 API 호출
+        print("추천하기 클릭")
+    }
+    
+    @objc
+    private func didTapEdit() {
+        // TODO: 수정 화면으로 이동
+        print("수정하기 클릭")
+    }
+    
+    @objc
+    private func didTapSendComment() {
+        guard let commentText = postDetailView.commentTextField.text,
+              !commentText.isEmpty else { return }
+        
+        // TODO: 댓글 작성 API 호출
+        print("댓글 전송: \(commentText)")
+        postDetailView.commentTextField.text = ""
+        view.endEditing(true)
+    }
+    
     //MARK: - Setup UI
     private func setupNavigationBar() {
         navigationBarManager.addBackButton(
@@ -86,15 +121,30 @@ class PostDetailViewController: UIViewController {
             tintColor: .black
         )
         
+        let displayTitle = BoardType(rawValue: boardCategory)?.koreanName ?? boardCategory
         navigationBarManager.setTitle(
             to: navigationItem,
-            title: storeCategory,
+            title: displayTitle,
             textColor: .gray900
         )
         
         if let navBar = navigationController?.navigationBar {
             navigationBarManager.addBottomLine(to: navBar)
         }
+    }
+    
+    private func updateUI(with data: PostDetailResponseDTO) {
+        postDetailView.configure(
+            title: data.title,
+            content: data.content,
+            address: data.address,
+            authorInfo: data.authorInfo,
+            likeCount: data.likeCount,
+            isLiked: data.isLiked,
+            isWriter: data.isWriter,
+            badge: data.badge,
+            imageUrl: data.imageUrl
+        )
     }
     
     // MARK: - Keyboard Setting
@@ -113,7 +163,8 @@ class PostDetailViewController: UIViewController {
         )
     }
     
-    @objc private func keyboardWillShow(_ notification: Notification) {
+    @objc
+    private func keyboardWillShow(_ notification: Notification) {
         guard
             let frame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
             let duration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double
@@ -128,7 +179,8 @@ class PostDetailViewController: UIViewController {
     }
     
     
-    @objc private func keyboardWillHide(_ notification: Notification) {
+    @objc
+    private func keyboardWillHide(_ notification: Notification) {
         guard let duration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double else { return }
         
         postDetailView.bottomConstraint?.update(offset: 0)
@@ -144,7 +196,8 @@ class PostDetailViewController: UIViewController {
         view.addGestureRecognizer(tapGesture)
     }
     
-    @objc private func dismissKeyboard() {
+    @objc
+    private func dismissKeyboard() {
         view.endEditing(true)
     }
 }
@@ -153,25 +206,31 @@ class PostDetailViewController: UIViewController {
 extension PostDetailViewController: UITableViewDataSource, UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        comments.count
+        return comments.count
     }
 
-    func tableView(_ tableView: UITableView,
-                   cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(
             withIdentifier: CommentTableViewCell.identifier,
             for: indexPath
         ) as? CommentTableViewCell else { return UITableViewCell() }
 
         let comment = comments[indexPath.row]
-        cell.configure(comment)
+        
+        // API 데이터로 configure
+        cell.configure(
+            nickname: comment.authorInfo,
+            content: comment.content,
+            depth: 0,  // TODO: 대댓글 depth 처리 필요시 추가
+            isAuthor: comment.isWriter
+        )
 
-        // 버튼 클릭 테스트용
         cell.detailButton.tag = indexPath.row
-        cell.detailButton.addTarget(self,
-                                    action: #selector(didTapDetailButton(_:)),
-                                    for: .touchUpInside)
+        cell.detailButton.addTarget(
+            self,
+            action: #selector(didTapDetailButton(_:)),
+            for: .touchUpInside
+        )
 
         return cell
     }
@@ -183,25 +242,20 @@ extension PostDetailViewController: UITableViewDataSource, UITableViewDelegate {
 
         let sheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
 
-        if comment.isAuthor {
-            // 글쓴이 -> 수정 / 삭제
+        if comment.isWriter {
             sheet.addAction(UIAlertAction(title: "수정하기", style: .default, handler: { _ in
-                print("수정하기 눌림 — row: \(row)")
+                print("수정하기 눌림 — commentId: \(comment.commentId)")
             }))
             sheet.addAction(UIAlertAction(title: "삭제하기", style: .destructive, handler: { _ in
-                print("삭제하기 눌림 — row: \(row)")
+                print("삭제하기 눌림 — commentId: \(comment.commentId)")
             }))
         } else {
-            // 글쓴이 아님 -> 답글 달기
             sheet.addAction(UIAlertAction(title: "답글 달기", style: .default, handler: { _ in
-                print("답글달기 눌림 — row: \(row)")
-                // 여기에 reply mode 활성화 로직 넣으면 됨
+                print("답글달기 눌림 — commentId: \(comment.commentId)")
             }))
         }
 
         sheet.addAction(UIAlertAction(title: "취소", style: .cancel, handler: nil))
-
         present(sheet, animated: true)
     }
-
 }

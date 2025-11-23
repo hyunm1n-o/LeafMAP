@@ -11,7 +11,7 @@ import PhotosUI
 class AddPostViewController: UIViewController {
     // MARK: - Properties
     let navigationBarManager = NavigationManager()
-    let storeCategory: String
+    let boardCategory: String
     private var keyboardHeight: CGFloat = 0
     
     // MARK: - View
@@ -26,8 +26,8 @@ class AddPostViewController: UIViewController {
     }
     
     // MARK: - Init
-    init(storeCategory: String) {
-        self.storeCategory = storeCategory
+    init(boardCategory: String) {
+        self.boardCategory = boardCategory
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -55,11 +55,15 @@ class AddPostViewController: UIViewController {
         updateAddButtonState()
         
         // 맛집 게시판만 주소 입력 가능
-        addPostView.setAddressFieldHidden(storeCategory != "맛집 게시판")
+        addPostView.setAddressFieldHidden(boardCategory != "맛집 게시판")
     }
     
     deinit {
         NotificationCenter.default.removeObserver(self)
+    }
+    // MARK: - Network
+    func callGetBoardDetail() {
+        
     }
     
     // MARK: - Navigation
@@ -71,9 +75,10 @@ class AddPostViewController: UIViewController {
             tintColor: .black
         )
         
+        let displayTitle = BoardType(rawValue: boardCategory)?.koreanName ?? boardCategory
         navigationBarManager.setTitle(
             to: navigationItem,
-            title: storeCategory + " - 게시글 작성",
+            title: displayTitle + " - 게시글 작성",
             textColor: .gray900
         )
         

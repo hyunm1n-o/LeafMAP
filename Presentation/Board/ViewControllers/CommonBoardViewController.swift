@@ -9,8 +9,16 @@ import UIKit
 
 class CommonBoardViewController: UIViewController {
     // MARK: - Properties
+    let postService = PostService()
     let navigationBarManager = NavigationManager()
-    let storeCategory: String
+    let boardCategory: String
+    
+    // 페이지네이션 관련 프로퍼티
+    private var posts: [PostPreviewDTO] = []
+    private var currentCursor: Int = 0
+    private var hasNext: Bool = true
+    private let limit: Int = 20
+    private var isLoading: Bool = false
     
     // MARK: - View
     private lazy var commonBoradView = CommonBoardView().then {
@@ -18,8 +26,8 @@ class CommonBoardViewController: UIViewController {
     }
     
     // MARK: - init
-    init(storeCategory: String) {
-        self.storeCategory = storeCategory
+    init(boardCategory: String) {
+        self.boardCategory = boardCategory
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -37,6 +45,37 @@ class CommonBoardViewController: UIViewController {
         
         setupNavigationBar()
         setDelegate()
+        callGetBoardList()
+    }
+    
+    // MARK: - Network
+    func callGetBoardList() {
+        guard !isLoading && hasNext else { return }
+        
+        isLoading = true
+        
+        postService.getPostList(
+            boardType: boardCategory,
+            cursor: currentCursor,
+            limit: limit,
+            completion: { [weak self] result in
+                guard let self = self else { return }
+                
+                self.isLoading = false
+                
+                switch result {
+                case .success(let data):
+                    self.posts.append(contentsOf: data.posts)
+                    self.currentCursor = data.nextCursor
+                    self.hasNext = data.hasNext
+                    self.commonBoradView.postTableView.reloadData()
+                    
+                    print("✅ 게시글 \(data.posts.count)개 로드 (전체: \(self.posts.count)개)")
+                    
+                case .failure(let error):
+                    print("❌ Error: \(error.localizedDescription)")
+                }
+            })
     }
     
     // MARK: - Functional
@@ -53,7 +92,7 @@ class CommonBoardViewController: UIViewController {
     
     @objc
     private func didTapWriteButton() {
-        let nextVC = AddPostViewController(storeCategory: storeCategory)
+        let nextVC = AddPostViewController(boardCategory: boardCategory)
         navigationController?.pushViewController(nextVC, animated: true)
     }
     
@@ -66,9 +105,10 @@ class CommonBoardViewController: UIViewController {
             tintColor: .black
         )
         
+        let displayTitle = BoardType(rawValue: boardCategory)?.koreanName ?? boardCategory
         navigationBarManager.setTitle(
             to: navigationItem,
-            title: storeCategory,
+            title: displayTitle,
             textColor: .gray900
         )
         
@@ -80,14 +120,11 @@ class CommonBoardViewController: UIViewController {
 // MARK: - UITableView Delegate & DataSource
 extension CommonBoardViewController: UITableViewDelegate, UITableViewDataSource {
     
-    // 섹션당 행 개수
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 10 // 나중에 실제 데이터 배열 개수로 변경
+        return posts.count
     }
     
-    // 셀 구성
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-
         guard let cell = tableView.dequeueReusableCell(
             withIdentifier: PostTableViewCell.identifier,
             for: indexPath
@@ -95,28 +132,36 @@ extension CommonBoardViewController: UITableViewDelegate, UITableViewDataSource 
             return UITableViewCell()
         }
         
-        // 예시 데이터
-        let title = "게시글 제목 \(indexPath.row + 1)"
-        let content = "게시글 내용 미리보기 \(indexPath.row + 1)"
-        let postInfo = "작성자 | 시간"
-        let isCertified = true
-        
-        cell.configure(title: title, content: content, postInfo: postInfo, isCertified: isCertified)
+        let post = posts[indexPath.row]
+        cell.configure(
+            title: post.title,
+            content: post.contentPreview,
+            postInfo: post.authorInfo,
+            isCertified: true  // badge 정보가 필요하면 DTO에 추가 필요
+        )
         
         return cell
     }
     
-    // 셀 선택 시 이벤트
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        print("게시글 \(indexPath.row + 1) 선택")
         
-        let nextVC = PostDetailViewController(storeCategory: storeCategory)
+        let post = posts[indexPath.row]
+        print("게시글 \(post.postId) 선택")
+        
+        let nextVC = PostDetailViewController(boardCategory: boardCategory, postId: post.postId)
         navigationController?.pushViewController(nextVC, animated: true)
     }
     
-    // 셀 높이
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 110 // 필요에 따라 동적 높이 적용 가능
+        return 110
+    }
+    
+    // 무한 스크롤 구현
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        // 마지막 셀에 도달하면 다음 페이지 로드
+        if indexPath.row == posts.count - 1 && hasNext {
+            callGetBoardList()
+        }
     }
 }

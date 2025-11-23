@@ -13,6 +13,7 @@ class StoreCollectionViewCell: UICollectionViewCell {
     
     private lazy var storeImageView = UIImageView().then {
         $0.contentMode = .scaleAspectFill
+        $0.clipsToBounds = true
         $0.layer.cornerRadius = 12
         $0.backgroundColor = .systemRed
     }

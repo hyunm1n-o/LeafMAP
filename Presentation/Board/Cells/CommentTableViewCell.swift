@@ -10,7 +10,7 @@ import SnapKit
 
 class CommentTableViewCell: UITableViewCell {
     static let identifier = "CommentTableViewCell"
-
+    
     private lazy var userIcon = UIImageView().then {
         $0.image = UIImage(named: "user")
     }
@@ -18,28 +18,28 @@ class CommentTableViewCell: UITableViewCell {
     private lazy var nicknameLabel = AppLabel(text: "",
                                               font: UIFont(name: AppFontName.pRegular, size: 15)!,
                                               textColor: .gray900)
-
+    
     private lazy var contentLabel = AppLabel(text: "",
                                              font: UIFont(name: AppFontName.pRegular, size: 14)!,
                                              textColor: .gray)
-
+    
     public lazy var detailButton = TouchAreaButton().then {
         $0.setImage(UIImage(named: "dotdotdot"), for: .normal)
     }
-
+    
     //MARK: - init
     private var leadingConstraint: Constraint?
-
+    
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         self.selectionStyle = .none
         setUI()
     }
-
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
+    
     private func setUI() {
         contentView.addSubviews([userIcon, nicknameLabel, contentLabel, detailButton])
         
@@ -67,12 +67,10 @@ class CommentTableViewCell: UITableViewCell {
             $0.bottom.equalToSuperview().inset(12)
         }
     }
-
-    public func configure(_ model: Comment) {
-        nicknameLabel.text = model.nickname
-        contentLabel.text = model.content
-        
-        let indent = 24 + (model.depth * 20)
-        leadingConstraint?.update(offset: indent)
+    
+    func configure(nickname: String, content: String, depth: Int, isAuthor: Bool) {
+        nicknameLabel.text = nickname
+        contentLabel.text = content
+        // depth에 따른 들여쓰기 처리 등
     }
 }

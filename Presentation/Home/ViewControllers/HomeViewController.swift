@@ -46,13 +46,13 @@ class HomeViewController: UIViewController {
     }
     
     override func viewWillAppear(_ animated: Bool) {
-      navigationController?.isNavigationBarHidden = true // 뷰 컨트롤러가 나타날 때 숨기기
+        navigationController?.isNavigationBarHidden = true // 뷰 컨트롤러가 나타날 때 숨기기
         callGetMember()
         callGetRESPhoto()
     }
-
+    
     override func viewWillDisappear(_ animated: Bool) {
-      navigationController?.isNavigationBarHidden = false // 뷰 컨트롤러가 사라질 때 나타내기
+        navigationController?.isNavigationBarHidden = false // 뷰 컨트롤러가 사라질 때 나타내기
     }
     
     // MARK: - Network
@@ -65,7 +65,7 @@ class HomeViewController: UIViewController {
                 homeView.name = data.nickname
                 homeView.major = data.major
                 print(data.nickname, data.major)
-               
+                
             case .failure(let error):
                 print("Error: \(error.localizedDescription)")
             }
@@ -126,12 +126,12 @@ class HomeViewController: UIViewController {
         goToBoard("학과 선택 꿀팁")
     }
     
-    private func goToBoard(_ boradName: String) {
-        let nextVC = CommonBoardViewController(storeCategory: boradName)
+    private func goToBoard(_ boardName: String) {
+        let boardType = BoardType.fromKoreanName(boardName)
+        let nextVC = CommonBoardViewController(boardCategory: boardType)
         navigationController?.pushViewController(nextVC, animated: true)
     }
 }
-
 
 // MARK: - TableView Extension
 extension HomeViewController: UITableViewDelegate, UITableViewDataSource {

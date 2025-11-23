@@ -30,7 +30,7 @@ class PostTableViewCell: UITableViewCell {
     
     private lazy var postInfoLabel = AppLabel(text: "사용자 | 시간",
                                     font: UIFont(name: AppFontName.pSemiBold, size: 12)!,
-                                         textColor: .disable).then {
+                                         textColor: .gray).then {
         $0.textAlignment = .right
     }
     
@@ -64,7 +64,7 @@ class PostTableViewCell: UITableViewCell {
         }
         
         postInfoLabel.snp.makeConstraints {
-            $0.top.equalTo(contentLabel.snp.bottom).offset(12)
+            $0.bottom.equalToSuperview().inset(12)
             $0.trailing.equalToSuperview().inset(24)
         }
         

@@ -120,6 +120,41 @@ class PostDetailView: UIView {
     }
     
     //MARK: - SetUI
+    public func configure(
+        title: String,
+        content: String,
+        address: String?,
+        authorInfo: String,
+        likeCount: Int,
+        isLiked: Bool,
+        isWriter: Bool,
+        badge: Bool,
+        imageUrl: String?
+    ) {
+        titleLabel.text = title
+        contentLabel.text = content
+        postInfoLabel.text = authorInfo
+        recommendButton.isSelected = isLiked
+        recommendLabel.text = "추천하기 (\(likeCount))"
+        
+        // 뱃지 표시/숨김
+        setBadgeHidden(!badge)
+        
+        // 작성자인 경우 수정 버튼 표시
+        setEditHidden(!isWriter)
+        
+        // 주소가 있는 경우 표시
+        if let address = address, !address.isEmpty {
+            locationLabel.text = "📍주소: \(address)"
+            setLocationHidden(false)
+        } else {
+            setLocationHidden(true)
+        }
+        
+        // TODO: 이미지가 있으면 표시
+        // if let imageUrl = imageUrl { ... }
+    }
+    
     private func setView() {
         addSubviews([
             titleLabel,
