@@ -144,6 +144,8 @@ class PostDetailView: UIView {
     
     public func setEditHidden(_ isHidden: Bool) {
         editButton.isHidden = isHidden
+        deleteButton.isHidden = isHidden
+        divideLine.isHidden = isHidden
     }
     
     //MARK: - SetUI

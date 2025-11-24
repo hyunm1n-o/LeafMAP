@@ -137,7 +137,7 @@ extension CommonBoardViewController: UITableViewDelegate, UITableViewDataSource 
             title: post.title,
             content: post.contentPreview,
             postInfo: post.authorInfo,
-            isCertified: true  // badge 정보가 필요하면 DTO에 추가 필요
+            isCertified: post.badge
         )
         
         return cell

@@ -11,10 +11,12 @@ struct PostCreateResponseDTO: Codable {
     let postId: Int
 }
 
+// 백엔드 응답에 맞춘 PostPreviewDTO
 struct PostPreviewDTO: Codable {
     let postId: Int
     private let _title: String?
     private let _contentPreview: String?
+    private let _badge: Bool?
     let isPublic: Bool?
     private let _majorId: Int?
     private let _majorName: String?
@@ -23,6 +25,7 @@ struct PostPreviewDTO: Codable {
     
     var title: String { _title ?? "" }
     var contentPreview: String { _contentPreview ?? "" }
+    var badge: Bool { _badge ?? false } 
     var majorId: Int { _majorId ?? 0 }
     var majorName: String { _majorName ?? "" }
     var authorInfo: String { _authorInfo ?? "" }
@@ -31,6 +34,7 @@ struct PostPreviewDTO: Codable {
         case postId, isPublic, boardType
         case _title = "title"
         case _contentPreview = "contentPreview"
+        case _badge = "badge"
         case _majorId = "majorId"
         case _majorName = "majorName"
         case _authorInfo = "authorInfo"
