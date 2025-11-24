@@ -33,7 +33,7 @@ class MajorTipView: UIView {
         textColor: .gray900
     )
     
-    public lazy var editButton = SmallTextButton(title: "수정하기")
+    public lazy var editButton = SmallTextButton(title: "내 희망학과 수정하기")
     
     //MARK: 핵심키워드
     private lazy var firstView = makeBoxView()

@@ -12,6 +12,7 @@
 		9168B91A2ED1CB2000F5E7B8 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 9168B9192ED1CB2000F5E7B8 /* Kingfisher */; };
 		9168B9202ED1D47600F5E7B8 /* Moya in Frameworks */ = {isa = PBXBuildFile; productRef = 9168B91F2ED1D47600F5E7B8 /* Moya */; };
 		9168B9232ED1D48800F5E7B8 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 9168B9222ED1D48800F5E7B8 /* Alamofire */; };
+		9168BCF32ED4DF1100F5E7B8 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 9168BCF22ED4DF1100F5E7B8 /* Lottie */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -54,6 +55,7 @@
 				9168B31D2ECE13D300F5E7B8 /* Then in Frameworks */,
 				9168B9202ED1D47600F5E7B8 /* Moya in Frameworks */,
 				9168B3202ECE13ED00F5E7B8 /* SnapKit in Frameworks */,
+				9168BCF32ED4DF1100F5E7B8 /* Lottie in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -103,6 +105,7 @@
 				9168B9192ED1CB2000F5E7B8 /* Kingfisher */,
 				9168B91F2ED1D47600F5E7B8 /* Moya */,
 				9168B9222ED1D48800F5E7B8 /* Alamofire */,
+				9168BCF22ED4DF1100F5E7B8 /* Lottie */,
 			);
 			productName = LeafMAP;
 			productReference = 9168B2F02ECE10FE00F5E7B8 /* LeafMAP.app */;
@@ -138,6 +141,7 @@
 				9168B9182ED1CB2000F5E7B8 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				9168B91E2ED1D47600F5E7B8 /* XCRemoteSwiftPackageReference "Moya" */,
 				9168B9212ED1D48800F5E7B8 /* XCRemoteSwiftPackageReference "Alamofire" */,
+				9168BCF12ED4DF1100F5E7B8 /* XCRemoteSwiftPackageReference "lottie-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 9168B2F12ECE10FE00F5E7B8 /* Products */;
@@ -407,6 +411,14 @@
 				minimumVersion = 5.10.2;
 			};
 		};
+		9168BCF12ED4DF1100F5E7B8 /* XCRemoteSwiftPackageReference "lottie-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/airbnb/lottie-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.5.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -434,6 +446,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9168B9212ED1D48800F5E7B8 /* XCRemoteSwiftPackageReference "Alamofire" */;
 			productName = Alamofire;
+		};
+		9168BCF22ED4DF1100F5E7B8 /* Lottie */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9168BCF12ED4DF1100F5E7B8 /* XCRemoteSwiftPackageReference "lottie-ios" */;
+			productName = Lottie;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

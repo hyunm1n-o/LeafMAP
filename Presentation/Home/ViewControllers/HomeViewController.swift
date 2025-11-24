@@ -16,7 +16,8 @@ class HomeViewController: UIViewController {
     private var tableviewData: [String] = [
         "선배의 한마디",
         "맛집 게시판",
-        "나의 발자취 "
+        "나의 발자취",
+        "나의 성향 알아보기"
     ]
     
     // MARK: - View
@@ -168,6 +169,9 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
             goToBoard("맛집 게시판")
         case 2:
             print("나의 발자취 보기 클릭")
+        case 3:
+            let nextVC = TestViewController()
+            navigationController?.pushViewController(nextVC, animated: true)
         default:
             break
         }

@@ -29,7 +29,7 @@ class HomeView: UIView {
     }
     
     //MARK: - Components
-    private lazy var greetingLabel = AppLabel(text: "\(name)님, 반가워요!🌱",
+    private lazy var greetingLabel = AppLabel(text: "\(name)님, 반가워요! 🌱",
                                               font: UIFont(name: AppFontName.pSemiBold, size: 24)!,
                                               textColor: .gray900).then {
         let targetString = "\(name)"
