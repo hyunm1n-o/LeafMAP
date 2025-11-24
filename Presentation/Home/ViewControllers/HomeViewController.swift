@@ -104,6 +104,8 @@ class HomeViewController: UIViewController {
     @objc
     private func didTapFloatButton() {
         print("챗봇")
+        let nextVC = ChatBotViewController()
+        navigationController?.pushViewController(nextVC, animated: true)
     }
     
     @objc
