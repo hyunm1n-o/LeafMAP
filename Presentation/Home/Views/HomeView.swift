@@ -142,7 +142,7 @@ class HomeView: UIView {
     
     private func setConstraints() {
         greetingLabel.snp.makeConstraints {
-            $0.top.equalTo(safeAreaLayoutGuide).inset(70)
+            $0.top.equalToSuperview().inset(100)
             $0.leading.equalToSuperview().inset(24)
         }
         
