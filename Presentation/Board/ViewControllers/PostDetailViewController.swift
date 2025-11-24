@@ -49,12 +49,26 @@ class PostDetailViewController: UIViewController {
         setDelegate()
         addTapGestureToDismissKeyboard()
         callGetBoardDetail()
+        
+        // 테이블뷰 높이 observer 추가
+        postDetailView.commentTableView.addObserver(self, forKeyPath: "contentSize", options: .new, context: nil)
     }
     
     deinit {
         NotificationCenter.default.removeObserver(self)
+        postDetailView.commentTableView.removeObserver(self, forKeyPath: "contentSize")
     }
     
+    // 테이블뷰 높이 자동 조정
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        if keyPath == "contentSize" {
+            if let newSize = change?[.newKey] as? CGSize {
+                postDetailView.commentTableView.snp.updateConstraints {
+                    $0.height.equalTo(newSize.height)
+                }
+            }
+        }
+    }
     
     // MARK: - Network
     func callGetBoardDetail() {
@@ -70,9 +84,46 @@ class PostDetailViewController: UIViewController {
                     self.comments = data.comments
                     self.updateUI(with: data)
                     self.postDetailView.commentTableView.reloadData()
+                    
+                    // 테이블뷰 높이 업데이트
+                    DispatchQueue.main.async {
+                        self.postDetailView.commentTableView.layoutIfNeeded()
+                    }
+                    
                     print("✅ 게시글 상세 로드 성공")
                 case .failure(let error):
                     print("❌ Error: \(error.localizedDescription)")
+                }
+            })
+    }
+    
+    // 좋아요 토글 API
+    func callPostToggleLike() {
+        postService.toggleLike(
+            boardType: boardCategory,
+            postId: postId,
+            completion: { [weak self] result in
+                guard let self = self else { return }
+                
+                switch result {
+                case .success(let data):
+                    print("✅ 좋아요 토글 성공")
+                    print("  - postId: \(data.postId)")
+                    print("  - likeCount: \(data.likeCount)")
+                    print("  - isLiked: \(data.isLiked)")
+                    
+                    // UI만 업데이트
+                    self.postDetailView.recommendButton.isSelected = data.isLiked
+                    self.postDetailView.updateLikeCount(data.likeCount)
+                    
+                case .failure(let error):
+                    print("❌ 좋아요 토글 실패: \(error.localizedDescription)")
+                    
+                    // 실패 시 원래 상태로 되돌리기
+                    if let detail = self.postDetail {
+                        self.postDetailView.recommendButton.isSelected = detail.isLiked
+                        self.postDetailView.updateLikeCount(detail.likeCount)
+                    }
                 }
             })
     }
@@ -91,8 +142,8 @@ class PostDetailViewController: UIViewController {
     
     @objc
     private func didTapRecommend() {
-        // TODO: 좋아요 API 호출
-        print("추천하기 클릭")
+        postDetailView.recommendButton.isSelected.toggle()
+        callPostToggleLike()
     }
     
     @objc
@@ -114,7 +165,6 @@ class PostDetailViewController: UIViewController {
         postDetailView.commentTextField.text = ""
         view.endEditing(true)
     }
-    
     
     //MARK: - Setup UI
     private func setupNavigationBar() {
@@ -182,7 +232,6 @@ class PostDetailViewController: UIViewController {
         }
     }
     
-    
     @objc
     private func keyboardWillHide(_ notification: Notification) {
         guard let duration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double else { return }
@@ -196,7 +245,7 @@ class PostDetailViewController: UIViewController {
     
     private func addTapGestureToDismissKeyboard() {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
-        tapGesture.cancelsTouchesInView = false // 테이블뷰 셀 터치 막지 않음
+        tapGesture.cancelsTouchesInView = false
         view.addGestureRecognizer(tapGesture)
     }
     
@@ -221,11 +270,10 @@ extension PostDetailViewController: UITableViewDataSource, UITableViewDelegate {
 
         let comment = comments[indexPath.row]
         
-        // API 데이터로 configure
         cell.configure(
             nickname: comment.authorInfo,
             content: comment.content,
-            depth: 0,  // TODO: 대댓글 depth 처리 필요시 추가
+            depth: 0,
             isAuthor: comment.isWriter
         )
 

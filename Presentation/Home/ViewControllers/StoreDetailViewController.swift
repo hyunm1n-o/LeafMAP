@@ -61,22 +61,35 @@ class StoreDetailViewController: UIViewController {
             })
     }
     
-    private func updateUI(with data: PostDetailResponseDTO) {
-        // 네비게이션 타이틀 업데이트
-        navigationBarManager.setTitle(
-            to: navigationItem,
-            title: data.title,
-            textColor: .gray900
-        )
-        
-        // 뷰 업데이트
-        storeDetailView.configure(
-            title: data.title,
-            address: data.address,
-            imageUrl: data.imageUrl,
-            likeCount: data.likeCount,
-            isLiked: data.isLiked
-        )
+    // 좋아요 토글 API
+    func callPostToggleLike() {
+        postService.toggleLike(
+            boardType: "RESTAURANT",
+            postId: postId,
+            completion: { [weak self] result in
+                guard let self = self else { return }
+                
+                switch result {
+                case .success(let data):
+                    print("✅ 좋아요 토글 성공")
+                    print("  - postId: \(data.postId)")
+                    print("  - likeCount: \(data.likeCount)")
+                    print("  - isLiked: \(data.isLiked)")
+                    
+                    // UI만 업데이트
+                    self.storeDetailView.recommendButton.isSelected = data.isLiked
+                    self.storeDetailView.updateLikeCount(data.likeCount)
+                    
+                case .failure(let error):
+                    print("❌ 좋아요 토글 실패: \(error.localizedDescription)")
+                    
+                    // 실패 시 원래 상태로 되돌리기
+                    if let detail = self.postDetail {
+                        self.storeDetailView.recommendButton.isSelected = detail.isLiked
+                        self.storeDetailView.updateLikeCount(detail.likeCount)
+                    }
+                }
+            })
     }
     
     //MARK: - Event
@@ -89,12 +102,7 @@ class StoreDetailViewController: UIViewController {
     private func didTapRecommend() {
         // TODO: 좋아요 API 호출
         storeDetailView.recommendButton.isSelected.toggle()
-        
-        if storeDetailView.recommendButton.isSelected {
-            print("추천 ON")
-        } else {
-            print("추천 OFF")
-        }
+        callPostToggleLike()
     }
     
     //MARK: - Setup UI
@@ -116,4 +124,23 @@ class StoreDetailViewController: UIViewController {
             navigationBarManager.addBottomLine(to: navBar)
         }
     }
+    
+    private func updateUI(with data: PostDetailResponseDTO) {
+        // 네비게이션 타이틀 업데이트
+        navigationBarManager.setTitle(
+            to: navigationItem,
+            title: data.title,
+            textColor: .gray900
+        )
+        
+        // 뷰 업데이트
+        storeDetailView.configure(
+            title: data.title,
+            address: data.address,
+            imageUrl: data.imageUrl,
+            likeCount: data.likeCount,
+            isLiked: data.isLiked
+        )
+    }
+    
 }

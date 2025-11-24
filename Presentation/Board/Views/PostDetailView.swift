@@ -368,4 +368,9 @@ class PostDetailView: UIView {
             $0.width.height.equalTo(20)
         }
     }
+    
+    //MARK: - Helpers
+    func updateLikeCount(_ count: Int) {
+        recommendLabel.text = "추천하기 (\(count))"
+    }
 }

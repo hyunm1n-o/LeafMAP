@@ -156,4 +156,9 @@ class StoreDetailView: UIView {
             $0.leading.equalTo(recommendButton.snp.trailing).offset(4)
         }
     }
+    
+    //MARK: - Helpers
+    func updateLikeCount(_ count: Int) {
+        recommendLabel.text = "추천하기 (\(count))"
+    }
 }
