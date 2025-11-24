@@ -25,7 +25,7 @@ struct PostPreviewDTO: Codable {
     
     var title: String { _title ?? "" }
     var contentPreview: String { _contentPreview ?? "" }
-    var badge: Bool { _badge ?? false } 
+    var badge: Bool { _badge ?? false }
     var majorId: Int { _majorId ?? 0 }
     var majorName: String { _majorName ?? "" }
     var authorInfo: String { _authorInfo ?? "" }
@@ -124,6 +124,7 @@ struct PostCommentDTO: Codable {
     private let _authorInfo: String?
     private let _isWriter: Bool?
     let createdAt: String?
+    let parentId: Int?
     
     var commentId: Int { _commentId ?? 0 }
     var content: String { _content ?? "" }
@@ -131,7 +132,7 @@ struct PostCommentDTO: Codable {
     var isWriter: Bool { _isWriter ?? false }
     
     enum CodingKeys: String, CodingKey {
-        case createdAt
+        case createdAt, parentId
         case _commentId = "commentId"
         case _content = "content"
         case _authorInfo = "authorInfo"
@@ -157,8 +158,8 @@ struct PostLikeResponseDTO: Codable {
 
 struct PostCommentResponseDTO: Codable {
     let commentId: Int
-    let content: String
-    let authorInfo: String
-    let isWriter: Bool
-    let createdAt: String
+    let content: String?
+    let authorInfo: String?
+    let isWriter: Bool?
+    let createdAt: String?
 }

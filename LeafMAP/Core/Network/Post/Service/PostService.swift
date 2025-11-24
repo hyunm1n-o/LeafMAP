@@ -91,4 +91,12 @@ final class PostService: NetworkManager {
             completion: completion
         )
     }
+    
+    // 게시글 삭제
+    func deleteComment(postId: Int, commentId:Int, completion: @escaping (Result<Void, NetworkError>) -> Void) {
+        requestStatusCode(
+            target: .deleteComment(postId: postId, commentId: commentId),
+            completion: completion
+        )
+    }
 }

@@ -91,12 +91,28 @@ class PostDetailView: UIView {
         $0.backgroundColor = .disable
     }
     
-    public lazy var commentTableView = UITableView(frame: .zero, style: .plain).then {
+    public lazy var commentTableView = UITableView(frame: .zero, style: .plain).then { 
         $0.separatorStyle = .none
         $0.backgroundColor = .clear
         $0.showsVerticalScrollIndicator = false
         $0.isScrollEnabled = false
         $0.register(CommentTableViewCell.self, forCellReuseIdentifier: CommentTableViewCell.identifier)
+    }
+    
+    private lazy var replyBarContainer = UIView().then {
+        $0.backgroundColor = .gray1
+        $0.isHidden = true
+    }
+
+    private lazy var replyLabel = AppLabel(
+        text: "",
+        font: UIFont(name: AppFontName.pRegular, size: 14)!,
+        textColor: .gray
+    )
+
+    public lazy var cancelReplyButton = UIButton().then {
+        $0.setImage(UIImage(systemName: "xmark"), for: .normal)
+        $0.tintColor = .gray
     }
     
     // MARK: - Comment Input Components
@@ -280,6 +296,9 @@ class PostDetailView: UIView {
             commentTableView
         ])
         
+        addSubview(replyBarContainer)
+        replyBarContainer.addSubviews([replyLabel, cancelReplyButton])
+        
         addSubview(bottomContainerView)
         bottomContainerView.addSubview(textFieldContainer)
         textFieldContainer.addSubviews([commentTextField, sendButton])
@@ -382,10 +401,38 @@ class PostDetailView: UIView {
             $0.centerY.equalToSuperview()
             $0.width.height.equalTo(20)
         }
+        
+        replyBarContainer.snp.makeConstraints {
+            $0.bottom.equalTo(bottomContainerView.snp.top)
+            $0.horizontalEdges.equalToSuperview()
+            $0.height.equalTo(40)
+        }
+
+        replyLabel.snp.makeConstraints {
+            $0.leading.equalToSuperview().inset(24)
+            $0.centerY.equalToSuperview()
+        }
+
+        cancelReplyButton.snp.makeConstraints {
+            $0.trailing.equalToSuperview().inset(24)
+            $0.centerY.equalToSuperview()
+            $0.size.equalTo(20)
+        }
     }
     
     //MARK: - Helpers
     func updateLikeCount(_ count: Int) {
         recommendLabel.text = "추천하기 (\(count))"
+    }
+    
+    // 답글 모드 설정 메서드 추가
+    func setReplyMode(isActive: Bool, parentAuthor: String) {
+        replyBarContainer.isHidden = !isActive
+        if isActive {
+            replyLabel.text = "\(parentAuthor)님에게 답글 작성 중..."
+            commentTextField.placeholder = "답글을 입력하세요"
+        } else {
+            commentTextField.placeholder = "댓글을 입력하세요"
+        }
     }
 }

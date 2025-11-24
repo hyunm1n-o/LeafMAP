@@ -6,7 +6,7 @@
 //
 
 import UIKit
-import SnapKit
+import SnapKit 
 
 class CommentTableViewCell: UITableViewCell {
     static let identifier = "CommentTableViewCell"
@@ -71,6 +71,9 @@ class CommentTableViewCell: UITableViewCell {
     func configure(nickname: String, content: String, depth: Int, isAuthor: Bool) {
         nicknameLabel.text = nickname
         contentLabel.text = content
-        // depth에 따른 들여쓰기 처리 등
+        
+        //depth에 따른 들여쓰기 
+        let leadingOffset = 24 + (depth * 24)
+        leadingConstraint?.update(offset: leadingOffset)
     }
 }

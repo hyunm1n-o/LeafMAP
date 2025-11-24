@@ -17,6 +17,8 @@ class PostDetailViewController: UIViewController {
     // 게시글 데이터 & 댓글 데이터
     private var postDetail: PostDetailResponseDTO?
     private var comments: [PostCommentDTO] = []
+    private var displayComments: [PostCommentDTO] = []
+    private var replyMode: (isActive: Bool, parentCommentId: Int, parentAuthor: String) = (false, 0, "")
     
     // MARK: - View
     private lazy var postDetailView = PostDetailView().then {
@@ -24,6 +26,7 @@ class PostDetailViewController: UIViewController {
         $0.editButton.addTarget(self, action: #selector(didTapEdit), for: .touchUpInside)
         $0.deleteButton.addTarget(self, action: #selector(didTapDelete), for: .touchUpInside)
         $0.sendButton.addTarget(self, action: #selector(didTapSendComment), for: .touchUpInside)
+        $0.cancelReplyButton.addTarget(self, action: #selector(didTapCancelReply), for: .touchUpInside)
     }
     
     // MARK: - init
@@ -83,6 +86,10 @@ class PostDetailViewController: UIViewController {
                 case .success(let data):
                     self.postDetail = data
                     self.comments = data.comments
+                    
+                    // 댓글을 계층 구조로 정렬
+                    self.displayComments = self.sortCommentsHierarchically(self.comments)
+                    
                     self.updateUI(with: data)
                     self.postDetailView.commentTableView.reloadData()
                     
@@ -98,6 +105,25 @@ class PostDetailViewController: UIViewController {
             })
     }
     
+    // 댓글을 계층 구조로 정렬 (부모 댓글 바로 밑에 자식 댓글)
+    private func sortCommentsHierarchically(_ comments: [PostCommentDTO]) -> [PostCommentDTO] {
+        var result: [PostCommentDTO] = []
+        
+        // 1. 부모 댓글들 (parentId가 nil인 것들)
+        let parentComments = comments.filter { $0.parentId == nil }
+        
+        // 2. 각 부모 댓글마다 자식 댓글들을 바로 밑에 추가
+        for parent in parentComments {
+            result.append(parent)
+            
+            // 이 부모의 자식 댓글들 찾기
+            let children = comments.filter { $0.parentId == parent.commentId }
+            result.append(contentsOf: children)
+        }
+        
+        return result
+    }
+    
     // 좋아요 토글 API
     func callPostToggleLike() {
         postService.toggleLike(
@@ -109,18 +135,11 @@ class PostDetailViewController: UIViewController {
                 switch result {
                 case .success(let data):
                     print("✅ 좋아요 토글 성공")
-                    print("  - postId: \(data.postId)")
-                    print("  - likeCount: \(data.likeCount)")
-                    print("  - isLiked: \(data.isLiked)")
-                    
-                    // UI만 업데이트
                     self.postDetailView.recommendButton.isSelected = data.isLiked
                     self.postDetailView.updateLikeCount(data.likeCount)
                     
                 case .failure(let error):
                     print("❌ 좋아요 토글 실패: \(error.localizedDescription)")
-                    
-                    // 실패 시 원래 상태로 되돌리기
                     if let detail = self.postDetail {
                         self.postDetailView.recommendButton.isSelected = detail.isLiked
                         self.postDetailView.updateLikeCount(detail.likeCount)
@@ -140,16 +159,12 @@ class PostDetailViewController: UIViewController {
                 switch result {
                 case .success:
                     print("✅ 게시글 삭제 성공")
-                    
-                    // 삭제 성공 시 이전 화면으로 이동
                     DispatchQueue.main.async {
                         self.navigationController?.popViewController(animated: true)
                     }
                     
                 case .failure(let error):
                     print("❌ 게시글 삭제 실패: \(error.localizedDescription)")
-                    
-                    // 에러 알림
                     let alert = UIAlertController(
                         title: "삭제 실패",
                         message: "게시글을 삭제할 수 없습니다.",
@@ -159,6 +174,83 @@ class PostDetailViewController: UIViewController {
                     self.present(alert, animated: true)
                 }
             })
+    }
+    
+    // 댓글 작성 API
+    func callCreateComment(content: String, parentId: Int? = 0) {
+        let requestData = PostCommentRequestDTO(
+            content: content,
+            parentId: parentId
+        )
+        
+        postService.createComment(
+            postId: postId,
+            data: requestData,
+            completion: { [weak self] result in
+                guard let self = self else { return }
+                
+                switch result {
+                case .success(let newComment):
+                    print("✅ 댓글 작성 성공: \(newComment.commentId)")
+                    
+                    // 답글 모드 해제
+                    self.exitReplyMode()
+                    
+                    // 댓글 목록 새로고침
+                    self.callGetBoardDetail()
+                    
+                case .failure(let error):
+                    print("❌ 댓글 작성 실패: \(error.localizedDescription)")
+                    let alert = UIAlertController(
+                        title: "댓글 작성 실패",
+                        message: "댓글을 작성할 수 없습니다.",
+                        preferredStyle: .alert
+                    )
+                    alert.addAction(UIAlertAction(title: "확인", style: .default))
+                    self.present(alert, animated: true)
+                }
+            })
+    }
+    
+    // 댓글 삭제 API
+    func callDeleteComment(commentId: Int) {
+        postService.deleteComment(
+            postId: postId,
+            commentId: commentId,
+            completion: { [weak self] result in
+                guard let self = self else { return }
+                
+                switch result {
+                case .success:
+                    print("✅ 댓글 삭제 성공")
+                    self.callGetBoardDetail()
+                    
+                case .failure(let error):
+                    print("❌ 댓글 삭제 실패: \(error.localizedDescription)")
+                    let alert = UIAlertController(
+                        title: "삭제 실패",
+                        message: "댓글을 삭제할 수 없습니다.",
+                        preferredStyle: .alert
+                    )
+                    alert.addAction(UIAlertAction(title: "확인", style: .default))
+                    self.present(alert, animated: true)
+                }
+            })
+    }
+    
+    // MARK: - Reply Mode
+    // 답글 모드 진입
+    private func enterReplyMode(parentCommentId: Int, parentAuthor: String) {
+        replyMode = (true, parentCommentId, parentAuthor)
+        postDetailView.setReplyMode(isActive: true, parentAuthor: parentAuthor)
+        postDetailView.commentTextField.becomeFirstResponder()
+    }
+    
+    // 답글 모드 해제
+    private func exitReplyMode() {
+        replyMode = (false, 0, "")
+        postDetailView.setReplyMode(isActive: false, parentAuthor: "")
+        postDetailView.commentTextField.text = ""
     }
     
     // MARK: - Functional
@@ -206,12 +298,25 @@ class PostDetailViewController: UIViewController {
     
     @objc
     private func didTapSendComment() {
-        guard let commentText = postDetailView.commentTextField.text,
+        guard let commentText = postDetailView.commentTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines),
               !commentText.isEmpty else { return }
         
-        // TODO: 댓글 작성 API 호출
-        print("댓글 전송: \(commentText)")
-        postDetailView.commentTextField.text = ""
+        // 답글 모드인지 확인
+        if replyMode.isActive {
+            // 대댓글 작성
+            callCreateComment(content: commentText, parentId: replyMode.parentCommentId)
+        } else {
+            // 일반 댓글 작성
+            callCreateComment(content: commentText, parentId: 0)
+        }
+        
+        view.endEditing(true)
+    }
+    
+    // 답글 취소 버튼
+    @objc
+    private func didTapCancelReply() {
+        exitReplyMode()
         view.endEditing(true)
     }
     
@@ -308,7 +413,7 @@ class PostDetailViewController: UIViewController {
 extension PostDetailViewController: UITableViewDataSource, UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return comments.count
+        return displayComments.count  // 정렬된 댓글 사용
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -317,12 +422,15 @@ extension PostDetailViewController: UITableViewDataSource, UITableViewDelegate {
             for: indexPath
         ) as? CommentTableViewCell else { return UITableViewCell() }
 
-        let comment = comments[indexPath.row]
+        let comment = displayComments[indexPath.row]
+        
+        // depth 계산
+        let depth = comment.parentId != nil ? 1 : 0
         
         cell.configure(
             nickname: comment.authorInfo,
             content: comment.content,
-            depth: 0,
+            depth: depth,
             isAuthor: comment.isWriter
         )
 
@@ -339,24 +447,42 @@ extension PostDetailViewController: UITableViewDataSource, UITableViewDelegate {
     @objc
     private func didTapDetailButton(_ sender: UIButton) {
         let row = sender.tag
-        let comment = comments[row]
+        let comment = displayComments[row]
 
         let sheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
 
         if comment.isWriter {
-            sheet.addAction(UIAlertAction(title: "수정하기", style: .default, handler: { _ in
-                print("수정하기 눌림 — commentId: \(comment.commentId)")
+            sheet.addAction(UIAlertAction(title: "삭제하기", style: .destructive, handler: { [weak self] _ in
+                self?.showDeleteCommentAlert(commentId: comment.commentId)
             }))
-            sheet.addAction(UIAlertAction(title: "삭제하기", style: .destructive, handler: { _ in
-                print("삭제하기 눌림 — commentId: \(comment.commentId)")
+            sheet.addAction(UIAlertAction(title: "답글 달기", style: .default, handler: { [weak self] _ in
+                // 답글 모드 진입
+                self?.enterReplyMode(parentCommentId: comment.commentId, parentAuthor: comment.authorInfo)
             }))
         } else {
-            sheet.addAction(UIAlertAction(title: "답글 달기", style: .default, handler: { _ in
-                print("답글달기 눌림 — commentId: \(comment.commentId)")
+            sheet.addAction(UIAlertAction(title: "답글 달기", style: .default, handler: { [weak self] _ in
+                // 답글 모드 진입
+                self?.enterReplyMode(parentCommentId: comment.commentId, parentAuthor: comment.authorInfo)
             }))
         }
 
         sheet.addAction(UIAlertAction(title: "취소", style: .cancel, handler: nil))
         present(sheet, animated: true)
+    }
+    
+    // 댓글 삭제 확인 알림
+    private func showDeleteCommentAlert(commentId: Int) {
+        let alert = UIAlertController(
+            title: "댓글 삭제",
+            message: "정말로 이 댓글을 삭제하시겠습니까?",
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: "취소", style: .cancel))
+        alert.addAction(UIAlertAction(title: "삭제", style: .destructive) { [weak self] _ in
+            self?.callDeleteComment(commentId: commentId)
+        })
+        
+        present(alert, animated: true)
     }
 }

@@ -24,6 +24,7 @@ enum PostEndpoints {
     
     // Delete
     case deleteBoardPosts(boardType: String, postId: Int)
+    case deleteComment(postId: Int, commentId: Int)
 }
 
 extension PostEndpoints: TargetType {
@@ -47,11 +48,13 @@ extension PostEndpoints: TargetType {
         case .postBoardPostsLike(let boardType, let postId):
             return "/\(boardType)/posts/\(postId)/like"
         case .postComment(let postId, _):
-            return "/posts/\(postId)/comments"
+            return "/\(postId)/comments"
         case .patchBoardPosts(let boardType, let postId, _, _):
             return "/\(boardType)/posts/\(postId)"
         case .deleteBoardPosts(let boardType, let postId):
             return "/\(boardType)/posts/\(postId)"
+        case .deleteComment(postId: let postId, commentId: let commentId):
+            return "/\(postId)/comments/\(commentId)"
         }
     }
     
@@ -63,7 +66,7 @@ extension PostEndpoints: TargetType {
             return .post
         case .patchBoardPosts:
             return .patch
-        case .deleteBoardPosts:
+        case .deleteBoardPosts, .deleteComment:
             return .delete
         }
     }
@@ -137,6 +140,8 @@ extension PostEndpoints: TargetType {
             return .uploadMultipart(formData)
             
         case .deleteBoardPosts:
+            return .requestPlain
+        case .deleteComment:
             return .requestPlain
         }
     }
