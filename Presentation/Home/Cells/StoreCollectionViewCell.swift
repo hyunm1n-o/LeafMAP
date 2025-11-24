@@ -15,7 +15,7 @@ class StoreCollectionViewCell: UICollectionViewCell {
         $0.contentMode = .scaleAspectFill
         $0.clipsToBounds = true
         $0.layer.cornerRadius = 12
-        $0.backgroundColor = .systemRed
+        $0.backgroundColor = .gray1
     }
     
     //MARK: - init

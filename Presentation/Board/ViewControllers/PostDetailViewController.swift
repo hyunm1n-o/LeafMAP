@@ -97,8 +97,11 @@ class PostDetailViewController: UIViewController {
     
     @objc
     private func didTapEdit() {
-        // TODO: 수정 화면으로 이동
-        print("수정하기 클릭")
+        guard let postDetail = postDetail else { return }
+        
+        let editMode = PostMode.edit(postId: postId, existingData: postDetail)
+        let editVC = AddPostViewController(boardCategory: boardCategory, mode: editMode)
+        navigationController?.pushViewController(editVC, animated: true)
     }
     
     @objc
@@ -111,6 +114,7 @@ class PostDetailViewController: UIViewController {
         postDetailView.commentTextField.text = ""
         view.endEditing(true)
     }
+    
     
     //MARK: - Setup UI
     private func setupNavigationBar() {

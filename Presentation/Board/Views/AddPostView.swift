@@ -28,9 +28,9 @@ class AddPostView: UIView {
         $0.snp.makeConstraints { $0.height.equalTo(1) }
     }
     
-    private lazy var imageLabel = AppLabel(text: "눌러서 이미지 추가", font:  UIFont(name: AppFontName.pRegular, size: 18)!, textColor: .gray).then {
-        $0.isUserInteractionEnabled = false
-    }
+    public lazy var imageLabel = AppLabel(text: "눌러서 이미지 추가", font:  UIFont(name: AppFontName.pRegular, size: 18)!, textColor: .gray).then {
+            $0.isUserInteractionEnabled = false
+        }
     
     public lazy var postImageButton = UIButton().then {
         $0.backgroundColor = .gray1
@@ -139,5 +139,9 @@ class AddPostView: UIView {
     // MARK: - Helpers
     func setAddressFieldHidden(_ hidden: Bool) {
         addressTextField.isHidden = hidden
+    }
+    
+    func setButtonTitle(_ title: String) {
+        addButton.setTitle(title, for: .normal)
     }
 }

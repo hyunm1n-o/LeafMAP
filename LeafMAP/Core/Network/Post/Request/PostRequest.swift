@@ -7,19 +7,19 @@
 
 import Foundation
 
-struct PostCreateRequestDTO: Codable {
+struct PostCreateRequestDTO: Encodable {
     let title: String
     let content: String
-    let address: String
+    let address: String?
 }
 
-struct PostUpdateRequestDTO: Codable {
+struct PostUpdateRequestDTO: Encodable {
     let title: String
     let content: String
-    let address: String
+    let address: String?
 }
 
-struct PostCommentRequestDTO: Codable {
+struct PostCommentRequestDTO: Encodable {
     let content: String
-    let parentId: Int
+    let parentId: Int?  
 }

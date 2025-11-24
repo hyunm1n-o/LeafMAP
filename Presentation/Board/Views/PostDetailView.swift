@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import Kingfisher
 
 class PostDetailView: UIView {
     //MARK: - Properties
@@ -14,10 +15,18 @@ class PostDetailView: UIView {
     public var bottomConstraint: Constraint?
     
     //MARK: - Components
+    private lazy var scrollView = UIScrollView().then {
+        $0.showsVerticalScrollIndicator = true
+        $0.alwaysBounceVertical = true
+    }
+    
+    private lazy var contentContainerView = UIView()
+    
     private lazy var titleLabel = AppLabel(text: "게시글 제목",
                                            font: UIFont(name: AppFontName.pSemiBold, size: 22)!,
                                            textColor: .gray900).then {
         $0.textAlignment = .left
+        $0.numberOfLines = 0
     }
     
     private lazy var certificationBadge = UIImageView().then {
@@ -26,16 +35,11 @@ class PostDetailView: UIView {
     
     public lazy var editButton = SmallTextButton(title: "수정하기")
     
-    private lazy var contentStackView = UIStackView().then {
-        $0.axis = .vertical
-        $0.spacing = 16
-        $0.alignment = .leading
-        $0.distribution = .equalSpacing
-    }
-    
     public lazy var imageView = UIImageView().then {
         $0.contentMode = .scaleAspectFill
         $0.backgroundColor = .gray1
+        $0.clipsToBounds = true
+        $0.layer.cornerRadius = 12
         $0.isHidden = true
     }
     
@@ -53,8 +57,6 @@ class PostDetailView: UIView {
         $0.numberOfLines = 0
         $0.isHidden = true
     }
-    
-    
     
     public lazy var recommendButton = UIButton().then {
         $0.setImage(UIImage(named: "heart_empty"), for: .normal)
@@ -75,16 +77,13 @@ class PostDetailView: UIView {
     
     private lazy var seperateLine = UIView().then {
         $0.backgroundColor = .disable
-        $0.snp.makeConstraints {
-            $0.height.equalTo(1)
-        }
     }
     
     public lazy var commentTableView = UITableView(frame: .zero, style: .plain).then {
         $0.separatorStyle = .none
         $0.backgroundColor = .clear
-        $0.showsVerticalScrollIndicator = true
-        $0.isScrollEnabled = true
+        $0.showsVerticalScrollIndicator = false
+        $0.isScrollEnabled = false
         $0.register(CommentTableViewCell.self, forCellReuseIdentifier: CommentTableViewCell.identifier)
     }
     
@@ -156,7 +155,7 @@ class PostDetailView: UIView {
         setBadgeHidden(!badge)
         setEditHidden(!isWriter)
         
-        //  주소 처리
+        // 주소 처리
         if let address = address, !address.isEmpty {
             locationLabel.text = "📍주소: \(address)"
             locationLabel.isHidden = false
@@ -170,12 +169,17 @@ class PostDetailView: UIView {
         } else {
             imageView.isHidden = true
             imageView.snp.remakeConstraints {
+                $0.top.equalTo(titleLabel.snp.bottom).offset(18)
+                $0.horizontalEdges.equalToSuperview().inset(24)
                 $0.height.equalTo(0)
+            }
+            contentLabel.snp.remakeConstraints {
+                $0.top.equalTo(imageView.snp.bottom).offset(0)
+                $0.horizontalEdges.equalToSuperview().inset(24)
             }
         }
     }
     
-    //  Kingfisher로 이미지 로드
     private func loadImage(from urlString: String) {
         guard let url = URL(string: urlString) else {
             imageView.isHidden = true
@@ -184,17 +188,16 @@ class PostDetailView: UIView {
         
         imageView.isHidden = false
         
-        //  contentLabel 제약조건 변경
-        contentLabel.snp.remakeConstraints {
-            $0.top.equalTo(imageView.snp.bottom).offset(18)
-            $0.horizontalEdges.equalToSuperview().inset(24)
-        }
-        
-        // 먼저 기본 제약조건 설정 (임시 높이)
+        // 먼저 임시 제약조건 설정
         imageView.snp.remakeConstraints {
             $0.top.equalTo(titleLabel.snp.bottom).offset(18)
             $0.horizontalEdges.equalToSuperview().inset(24)
             $0.height.equalTo(200)  // 임시
+        }
+        
+        contentLabel.snp.remakeConstraints {
+            $0.top.equalTo(imageView.snp.bottom).offset(18)
+            $0.horizontalEdges.equalToSuperview().inset(24)
         }
         
         imageView.kf.setImage(
@@ -211,14 +214,12 @@ class PostDetailView: UIView {
             case .success(let value):
                 print("✅ 게시글 이미지 로드 성공")
                 
-                // 이미지 로드 후 비율에 맞춰 높이 재조정
                 let image = value.image
                 let imageWidth = UIScreen.main.bounds.width - 48  // 좌우 패딩 24씩
                 let imageRatio = image.size.height / image.size.width
                 let calculatedHeight = imageWidth * imageRatio
                 
-                // 최대 높이 제한 (선택사항)
-                let finalHeight = min(calculatedHeight, 400)  // 최대 400
+                let finalHeight = min(calculatedHeight, 300)  // 최대 300
                 
                 self.imageView.snp.remakeConstraints {
                     $0.top.equalTo(self.titleLabel.snp.bottom).offset(18)
@@ -235,10 +236,12 @@ class PostDetailView: UIView {
                 print("❌ 게시글 이미지 로드 실패: \(error.localizedDescription)")
                 self.imageView.isHidden = true
                 self.imageView.snp.remakeConstraints {
+                    $0.top.equalTo(self.titleLabel.snp.bottom).offset(18)
+                    $0.horizontalEdges.equalToSuperview().inset(24)
                     $0.height.equalTo(0)
                 }
                 self.contentLabel.snp.remakeConstraints {
-                    $0.top.equalTo(self.titleLabel.snp.bottom).offset(18)
+                    $0.top.equalTo(self.imageView.snp.bottom).offset(0)
                     $0.horizontalEdges.equalToSuperview().inset(24)
                 }
             }
@@ -246,7 +249,10 @@ class PostDetailView: UIView {
     }
     
     private func setView() {
-        addSubviews([
+        addSubview(scrollView)
+        scrollView.addSubview(contentContainerView)
+        
+        contentContainerView.addSubviews([
             titleLabel,
             certificationBadge,
             editButton,
@@ -257,22 +263,34 @@ class PostDetailView: UIView {
             recommendLabel,
             postInfoLabel,
             seperateLine,
-            commentTableView,
-            bottomContainerView
+            commentTableView
         ])
         
+        addSubview(bottomContainerView)
         bottomContainerView.addSubview(textFieldContainer)
         textFieldContainer.addSubviews([commentTextField, sendButton])
     }
     
     private func setConstraints() {
+        scrollView.snp.makeConstraints {
+            $0.top.equalTo(safeAreaLayoutGuide)
+            $0.horizontalEdges.equalToSuperview()
+            $0.bottom.equalTo(bottomContainerView.snp.top)
+        }
+        
+        contentContainerView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+            $0.width.equalToSuperview()
+        }
+        
         titleLabel.snp.makeConstraints {
-            $0.top.equalTo(safeAreaLayoutGuide).inset(24)
+            $0.top.equalToSuperview().inset(24)
             $0.leading.equalToSuperview().inset(24)
+            $0.trailing.lessThanOrEqualTo(editButton.snp.leading).offset(-8)
         }
         
         certificationBadge.snp.makeConstraints {
-            $0.centerY.equalTo(titleLabel)
+            $0.top.equalTo(titleLabel)
             $0.leading.equalTo(titleLabel.snp.trailing).offset(8)
             $0.size.equalTo(18)
         }
@@ -289,7 +307,7 @@ class PostDetailView: UIView {
         }
         
         contentLabel.snp.makeConstraints {
-            $0.top.equalTo(titleLabel.snp.bottom).offset(18)
+            $0.top.equalTo(imageView.snp.bottom).offset(18)
             $0.horizontalEdges.equalToSuperview().inset(24)
         }
         
@@ -316,17 +334,19 @@ class PostDetailView: UIView {
         seperateLine.snp.makeConstraints {
             $0.horizontalEdges.equalToSuperview()
             $0.top.equalTo(recommendButton.snp.bottom).offset(24)
+            $0.height.equalTo(1)
         }
         
         commentTableView.snp.makeConstraints {
             $0.top.equalTo(seperateLine.snp.bottom).offset(12)
-            $0.leading.trailing.equalToSuperview()
-            $0.bottom.equalTo(bottomContainerView.snp.top)
+            $0.horizontalEdges.equalToSuperview()
+            $0.height.equalTo(0)  
+            $0.bottom.equalToSuperview().inset(12)
         }
         
         bottomContainerView.snp.makeConstraints {
             bottomConstraint = $0.bottom.equalTo(safeAreaLayoutGuide).constraint
-            $0.horizontalEdges.equalTo(safeAreaLayoutGuide)
+            $0.horizontalEdges.equalToSuperview()
             $0.height.equalTo(50)
         }
         
