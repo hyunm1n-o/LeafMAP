@@ -33,7 +33,19 @@ class PostDetailView: UIView {
         $0.image = UIImage(named: "badge")
     }
     
-    public lazy var editButton = SmallTextButton(title: "수정하기")
+    private lazy var meunStackView = UIStackView().then {
+        $0.axis = .horizontal
+        $0.spacing = 4
+    }
+    public lazy var editButton = SmallTextButton(title: "수정")
+    private lazy var divideLine = UIView().then {
+        $0.backgroundColor = .gray
+        $0.snp.makeConstraints {
+            $0.height.equalTo(12)
+            $0.width.equalTo(1)
+        }
+    }
+    public lazy var deleteButton = SmallTextButton(title: "삭제")
     
     public lazy var imageView = UIImageView().then {
         $0.contentMode = .scaleAspectFill
@@ -255,7 +267,7 @@ class PostDetailView: UIView {
         contentContainerView.addSubviews([
             titleLabel,
             certificationBadge,
-            editButton,
+            meunStackView,
             imageView,
             contentLabel,
             locationLabel,
@@ -269,6 +281,7 @@ class PostDetailView: UIView {
         addSubview(bottomContainerView)
         bottomContainerView.addSubview(textFieldContainer)
         textFieldContainer.addSubviews([commentTextField, sendButton])
+        meunStackView.addArrangedSubViews([editButton, divideLine, deleteButton])
     }
     
     private func setConstraints() {
@@ -295,7 +308,7 @@ class PostDetailView: UIView {
             $0.size.equalTo(18)
         }
         
-        editButton.snp.makeConstraints {
+        meunStackView.snp.makeConstraints {
             $0.centerY.equalTo(titleLabel)
             $0.trailing.equalToSuperview().inset(24)
         }

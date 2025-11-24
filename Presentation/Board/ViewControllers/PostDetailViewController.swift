@@ -22,6 +22,7 @@ class PostDetailViewController: UIViewController {
     private lazy var postDetailView = PostDetailView().then {
         $0.recommendButton.addTarget(self, action: #selector(didTapRecommend), for: .touchUpInside)
         $0.editButton.addTarget(self, action: #selector(didTapEdit), for: .touchUpInside)
+        $0.deleteButton.addTarget(self, action: #selector(didTapDelete), for: .touchUpInside)
         $0.sendButton.addTarget(self, action: #selector(didTapSendComment), for: .touchUpInside)
     }
     
@@ -128,6 +129,38 @@ class PostDetailViewController: UIViewController {
             })
     }
     
+    // 게시글 삭제 API
+    func callDeletePost() {
+        postService.deletePost(
+            boardType: boardCategory,
+            postId: postId,
+            completion: { [weak self] result in
+                guard let self = self else { return }
+                
+                switch result {
+                case .success:
+                    print("✅ 게시글 삭제 성공")
+                    
+                    // 삭제 성공 시 이전 화면으로 이동
+                    DispatchQueue.main.async {
+                        self.navigationController?.popViewController(animated: true)
+                    }
+                    
+                case .failure(let error):
+                    print("❌ 게시글 삭제 실패: \(error.localizedDescription)")
+                    
+                    // 에러 알림
+                    let alert = UIAlertController(
+                        title: "삭제 실패",
+                        message: "게시글을 삭제할 수 없습니다.",
+                        preferredStyle: .alert
+                    )
+                    alert.addAction(UIAlertAction(title: "확인", style: .default))
+                    self.present(alert, animated: true)
+                }
+            })
+    }
+    
     // MARK: - Functional
     private func setDelegate() {
         postDetailView.commentTableView.delegate = self
@@ -153,6 +186,22 @@ class PostDetailViewController: UIViewController {
         let editMode = PostMode.edit(postId: postId, existingData: postDetail)
         let editVC = AddPostViewController(boardCategory: boardCategory, mode: editMode)
         navigationController?.pushViewController(editVC, animated: true)
+    }
+    
+    @objc
+    private func didTapDelete() {
+        let alert = UIAlertController(
+            title: "게시글 삭제",
+            message: "정말로 이 게시글을 삭제하시겠습니까?",
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: "취소", style: .cancel))
+        alert.addAction(UIAlertAction(title: "삭제", style: .destructive) { [weak self] _ in
+            self?.callDeletePost()
+        })
+        
+        present(alert, animated: true)
     }
     
     @objc
