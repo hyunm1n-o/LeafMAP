@@ -59,7 +59,7 @@ class PostTableViewCell: UITableViewCell {
         }
         
         contentLabel.snp.makeConstraints {
-            $0.leading.equalToSuperview().offset(24)
+            $0.leading.trailing.equalToSuperview().inset(24)
             $0.top.equalTo(titleLabel.snp.bottom).offset(8)
         }
         

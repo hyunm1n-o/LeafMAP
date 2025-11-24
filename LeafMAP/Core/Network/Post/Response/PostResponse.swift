@@ -70,7 +70,7 @@ struct PostDetailResponseDTO: Codable {
     private let _isLiked: Bool?
     private let _authorInfo: String?
     let member: PostMemberDTO?
-    let major: PostMajorDTO?
+    let major: MajorDTO? 
     let comments: [PostCommentDTO]
     
     var title: String { _title ?? "" }
@@ -106,15 +106,25 @@ struct PostMemberDTO: Codable {
     }
 }
 
-struct PostMajorDTO: Codable {
-    let majorId: Int?
-    private let _majorName: String?
+struct MajorDTO: Codable {
+    let id: Int
+    private let _name: String?
+    private let _keywords: String?
+    let curriculumUrl: String?
+    private let _description: String?
+    private let _career: String?
     
-    var majorName: String { _majorName ?? "" }
+    var name: String { _name ?? "" }
+    var keywords: String { _keywords ?? "" }
+    var description: String { _description ?? "" }
+    var career: String { _career ?? "" }
     
     enum CodingKeys: String, CodingKey {
-        case majorId
-        case _majorName = "majorName"
+        case id, curriculumUrl
+        case _name = "name"
+        case _keywords = "keywords"
+        case _description = "description"
+        case _career = "career"
     }
 }
 

@@ -65,7 +65,7 @@ class HomeView: UIView {
         
     }
     
-    public let majorSelectTipView = SquareView(title: "학과 선택 꿀팁",
+    public let majorSelectTipView = SquareView(title: "학과별 선택 꿀팁",
                                                sub: "전공 고르기, 아무거나 금지")
     
     public let shortLoadTipView = SquareView(title: "지름길 보기",

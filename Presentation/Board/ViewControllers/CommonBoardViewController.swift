@@ -46,6 +46,20 @@ class CommonBoardViewController: UIViewController {
         setupNavigationBar()
         setDelegate()
         callGetBoardList()
+        
+        // 내희망학과 바로가기 버튼 (학과 팁 게시판이 아닐 때만 표시)
+        commonBoradView.setMajorList(boardCategory != "MAJOR_TIPS")
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        // 게시글 작성/수정 후 돌아왔을 때 목록 새로고침
+        if posts.count > 0 {
+            posts.removeAll()
+            currentCursor = 0
+            hasNext = true
+            callGetBoardList()
+        }
     }
     
     // MARK: - Network
@@ -117,6 +131,7 @@ class CommonBoardViewController: UIViewController {
         }
     }
 }
+
 // MARK: - UITableView Delegate & DataSource
 extension CommonBoardViewController: UITableViewDelegate, UITableViewDataSource {
     
@@ -149,8 +164,15 @@ extension CommonBoardViewController: UITableViewDelegate, UITableViewDataSource 
         let post = posts[indexPath.row]
         print("게시글 \(post.postId) 선택")
         
-        let nextVC = PostDetailViewController(boardCategory: boardCategory, postId: post.postId)
-        navigationController?.pushViewController(nextVC, animated: true)
+        //  학과 게시판이면 MajorTipViewController로 이동
+        if boardCategory == "MAJOR_TIPS" {
+            let nextVC = MajorTipViewController(postId: post.postId)
+            navigationController?.pushViewController(nextVC, animated: true)
+        } else {
+            // 일반 게시판은 PostDetailViewController로 이동
+            let nextVC = PostDetailViewController(boardCategory: boardCategory, postId: post.postId)
+            navigationController?.pushViewController(nextVC, animated: true)
+        }
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {

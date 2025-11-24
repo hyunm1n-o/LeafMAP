@@ -21,6 +21,21 @@ class CommonBoardView: UIView {
         $0.setImage(UIImage(named: "add"), for: .normal)
     }
     
+    public lazy var hopeMajorButton = UIButton().then {
+        $0.layer.cornerRadius = 12
+        $0.backgroundColor = .green01
+        $0.setTitleColor(.white, for: .normal)
+        $0.setTitle("내 희망학과 바로가기", for: .normal)
+        $0.isHidden = true
+        $0.titleLabel?.font = UIFont(name: AppFontName.pMedium, size: 14)
+        
+        $0.layer.shadowColor = UIColor.black.withAlphaComponent(0.25).cgColor
+        $0.layer.shadowOpacity = 1
+        $0.layer.shadowOffset = CGSize(width: 0, height: 2)
+        $0.layer.shadowRadius = 4
+    }
+    
+    
     //MARK: - init
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -35,7 +50,7 @@ class CommonBoardView: UIView {
     
     //MARK: - SetUI
     private func setView() {
-        addSubviews([postTableView, writeButton])
+        addSubviews([postTableView, writeButton, hopeMajorButton])
     }
     
     private func setConstraints() {
@@ -47,5 +62,18 @@ class CommonBoardView: UIView {
             $0.bottom.equalTo(safeAreaLayoutGuide)
             $0.trailing.equalToSuperview().inset(24)
         }
+        
+        hopeMajorButton.snp.makeConstraints {
+            $0.width.equalTo(140)
+            $0.height.equalTo(40)
+            $0.trailing.equalToSuperview().inset(24)
+            $0.bottom.equalToSuperview().inset(60)
+        }
+    }
+    
+    // MARK: - Helpers
+    func setMajorList(_ hidden: Bool) {
+        writeButton.isHidden = !hidden
+        hopeMajorButton.isHidden = hidden
     }
 }
