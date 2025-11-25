@@ -38,6 +38,31 @@ final class MemberService: NetworkManager {
             completion: completion
         )
     }
+    
+    // 내가 작성한 게시글 조회
+    func getMyPosts(cursor: Int, limit: Int, completion: @escaping(Result<MemberGetMyPostsDTO, NetworkError>) -> Void) {
+        request(
+            target: .getMyPosts(cursor: cursor, limit: limit),
+            decodingType: MemberGetMyPostsDTO.self,
+            completion: completion
+        )
+    }
+    
+    // 내가 댓글 단 게시글 조회
+    func getMyComments(cursor: Int, limit: Int, completion: @escaping(Result<MemberGetMyPostsDTO, NetworkError>) -> Void) {
+        request(
+            target: .getMyComments(cursor: cursor, limit: limit),
+            decodingType: MemberGetMyPostsDTO.self,
+            completion: completion
+        )
+    }
+    
+    // 내가 추천한 게시글 조회
+    func getLikedPosts(cursor: Int, limit: Int, completion: @escaping(Result<MemberGetMyPostsDTO, NetworkError>) -> Void) {
+        request(
+            target: .getLikedPosts(cursor: cursor, limit: limit),
+            decodingType: MemberGetMyPostsDTO.self,
+            completion: completion
+        )
+    }
 }
-
-

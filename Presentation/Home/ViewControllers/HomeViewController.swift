@@ -171,6 +171,8 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
             goToBoard("맛집 게시판")
         case 2:
             print("나의 발자취 보기 클릭")
+            let nextVC = MyLogViewController()
+            navigationController?.pushViewController(nextVC, animated: true)
         case 3:
             let nextVC = TestViewController()
             navigationController?.pushViewController(nextVC, animated: true)

@@ -11,9 +11,9 @@ import Moya
 enum MemberEndpoints {
     // Get
     case getMember
-    case getMyPosts
-    case getMyComments
-    case getLikedPosts
+    case getMyPosts(cursor: Int, limit: Int)
+    case getMyComments(cursor: Int, limit: Int)
+    case getLikedPosts(cursor: Int, limit: Int)
     
     // Patch
     case patchMember(data: MemberPatchRequestDTO)
@@ -53,8 +53,20 @@ extension MemberEndpoints: TargetType {
     
     var task: Moya.Task {
         switch self {
-        case .getMember, .getMyPosts, .getLikedPosts, .getMyComments:
+        case .getMember:
             return .requestPlain
+            
+        case .getMyPosts(let cursor, let limit),
+             .getMyComments(let cursor, let limit),
+             .getLikedPosts(let cursor, let limit):
+            return .requestParameters(
+                parameters: [
+                    "cursor": cursor,
+                    "limit": limit
+                ],
+                encoding: URLEncoding.queryString
+            )
+            
         case .patchMember(let data):
             return .requestJSONEncodable(data)
         }
@@ -66,7 +78,4 @@ extension MemberEndpoints: TargetType {
             "accept": "*/*"
         ]
     }
-    
 }
-
-
