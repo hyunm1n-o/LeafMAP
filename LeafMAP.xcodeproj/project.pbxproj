@@ -38,11 +38,6 @@
 			path = LeafMAP;
 			sourceTree = "<group>";
 		};
-		9168B3132ECE134400F5E7B8 /* Presentation */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = Presentation;
-			sourceTree = "<group>";
-		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -67,7 +62,6 @@
 			children = (
 				9168B2F22ECE10FE00F5E7B8 /* LeafMAP */,
 				9168B2F12ECE10FE00F5E7B8 /* Products */,
-				9168B3132ECE134400F5E7B8 /* Presentation */,
 			);
 			sourceTree = "<group>";
 		};
@@ -96,7 +90,6 @@
 			);
 			fileSystemSynchronizedGroups = (
 				9168B2F22ECE10FE00F5E7B8 /* LeafMAP */,
-				9168B3132ECE134400F5E7B8 /* Presentation */,
 			);
 			name = LeafMAP;
 			packageProductDependencies = (
