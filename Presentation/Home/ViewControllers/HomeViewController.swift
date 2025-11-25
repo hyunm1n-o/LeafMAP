@@ -101,6 +101,8 @@ class HomeViewController: UIViewController {
     @objc
     private func didTapEdit() {
         print("정보수정")
+        let nextVC = EditInfoViewController()
+        navigationController?.pushViewController(nextVC, animated: true)
     }
     @objc
     private func didTapFloatButton() {

@@ -199,8 +199,9 @@ class MajorTipViewController: UIViewController {
     
     @objc
     private func didTapEdit() {
-        // TODO: 희망학과 수정 화면으로 이동
         print("희망학과 수정")
+        let nextVC = EditInfoViewController()
+        navigationController?.pushViewController(nextVC, animated: true)
     }
     
     @objc

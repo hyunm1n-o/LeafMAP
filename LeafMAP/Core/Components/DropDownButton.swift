@@ -192,6 +192,13 @@ class DropDownButton: UIView {
         hideError()
     }
     
+    func setSelectedOption(_ option: String) {
+        guard let index = options.firstIndex(of: option) else {
+            return
+        }
+        selectOption(at: index)
+    }
+    
     func showError(message: String) {
         isError = true
         errorLabel.text = message

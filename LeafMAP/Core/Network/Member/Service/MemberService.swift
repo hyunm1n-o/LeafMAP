@@ -29,6 +29,15 @@ final class MemberService: NetworkManager {
             completion: completion
         )
     }
+    
+    // 회원정보 수정 API
+    func patchMember(data: MemberPatchRequestDTO, completion: @escaping(Result<MemberPatchResponseDTO, NetworkError>) -> Void) {
+        request(
+            target: .patchMember(data: data),
+            decodingType: MemberPatchResponseDTO.self,
+            completion: completion
+        )
+    }
 }
 
 

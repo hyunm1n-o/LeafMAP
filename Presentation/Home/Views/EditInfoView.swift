@@ -1,24 +1,21 @@
 //
-//  SelectMajorView.swift
+//  EditInfoView.swift
 //  LeafMAP
 //
-//  Created by 오현민 on 11/20/25.
+//  Created by 오현민 on 11/25/25.
 //
 
 import UIKit
 
-class SelectMajorView: UIView {
+class EditInfoView: UIView {
     //MARK: - Components
-    private lazy var progressBar = UIImageView().then {
-        $0.image = UIImage(named: "progress2")
-        $0.contentMode = .scaleAspectFill
+    public let idTextField = TitleTextField(title: "닉네임", placeholder: "변경할 닉네임을 입력해 주세요").then {
+        $0.textField.keyboardType = .alphabet
     }
-    
-    public let idTextField = TitleTextField(title: "닉네임", placeholder: "사용할 닉네임을 입력해 주세요")
     public let majorDropDown = DropDownButton(title: "현재 학과", placeholder: "현재 학과를 선택해 주세요")
     public let hopeMajorDropDown = DropDownButton(title: "희망 학과", placeholder: "희망 학과를 선택해 주세요")
     
-    public lazy var nextButton = AppButton(title: "가입완료 하기")
+    public lazy var nextButton = AppButton(title: "수정하기")
     
     //MARK: - init
     override init(frame: CGRect) {
@@ -34,17 +31,12 @@ class SelectMajorView: UIView {
     
     //MARK: - SetUI
     private func setView() {
-        addSubviews([progressBar, idTextField, majorDropDown, hopeMajorDropDown, nextButton])
+        addSubviews([idTextField, majorDropDown, hopeMajorDropDown, nextButton])
     }
     
     private func setConstraints() {
-        progressBar.snp.makeConstraints {
-            $0.top.equalTo(safeAreaLayoutGuide).inset(48)
-            $0.leading.equalToSuperview().inset(24)
-        }
-        
         idTextField.snp.makeConstraints {
-            $0.top.equalTo(progressBar.snp.bottom).offset(36)
+            $0.top.equalTo(safeAreaLayoutGuide).offset(36)
             $0.horizontalEdges.equalToSuperview().inset(24)
         }
         
@@ -58,7 +50,6 @@ class SelectMajorView: UIView {
             $0.horizontalEdges.equalToSuperview().inset(24)
 
         }
-        
         
         nextButton.snp.makeConstraints {
             $0.bottom.equalTo(safeAreaLayoutGuide).inset(48)
