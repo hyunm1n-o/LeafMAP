@@ -10,6 +10,7 @@ import UIKit
 class CommonBoardViewController: UIViewController {
     // MARK: - Properties
     let postService = PostService()
+    let memberService = MemberService()
     let navigationBarManager = NavigationManager()
     let boardCategory: String
     
@@ -23,6 +24,7 @@ class CommonBoardViewController: UIViewController {
     // MARK: - View
     private lazy var commonBoradView = CommonBoardView().then {
         $0.writeButton.addTarget(self, action: #selector(didTapWriteButton), for: .touchUpInside)
+        $0.hopeMajorButton.addTarget(self, action: #selector(didTapHopeMajorButton), for: .touchUpInside)
     }
     
     // MARK: - init
@@ -109,6 +111,73 @@ class CommonBoardViewController: UIViewController {
         let nextVC = AddPostViewController(boardCategory: boardCategory)
         navigationController?.pushViewController(nextVC, animated: true)
     }
+
+    @objc
+    private func didTapHopeMajorButton() {
+        print("내 희망학과 바로가기 클릭")
+
+        // 사용자 정보에서 희망학과 가져오기
+        memberService.getMember { [weak self] result in
+            guard let self = self else { return }
+
+            switch result {
+            case .success(let memberData):
+                let desiredMajor = memberData.desiredMajor
+                print("희망학과: \(desiredMajor)")
+
+                // 학과 팁 게시글 목록에서 해당 학과 찾기
+                self.postService.getPostList(
+                    boardType: "MAJOR_TIPS",
+                    cursor: 0,
+                    limit: 100,
+                    completion: { [weak self] result in
+                        guard let self = self else { return }
+
+                        switch result {
+                        case .success(let data):
+                            print("📋 전체 게시글 수: \(data.posts.count)")
+                            data.posts.forEach { post in
+                                print("  - majorName: '\(post.majorName)', postId: \(post.postId)")
+                            }
+
+                            // 희망학과와 일치하는 게시글 찾기 (정확히 일치 또는 포함)
+                            let matchingPost = data.posts.first { post in
+                                post.majorName == desiredMajor ||
+                                post.majorName.contains(desiredMajor) ||
+                                desiredMajor.contains(post.majorName)
+                            }
+
+                            if let matchingPost = matchingPost {
+                                print("✅ 희망학과 게시글 찾음: postId=\(matchingPost.postId), majorName=\(matchingPost.majorName)")
+
+                                let nextVC = MajorTipViewController(
+                                    postId: matchingPost.postId,
+                                    shouldScrollToComments: false,
+                                    majorName: matchingPost.majorName
+                                )
+                                self.navigationController?.pushViewController(nextVC, animated: true)
+                            } else {
+                                // 일치하는 게시글이 없을 경우 알림
+                                print("❌ 희망학과 '\(desiredMajor)'와 일치하는 게시글 없음")
+                                let alert = UIAlertController(
+                                    title: "알림",
+                                    message: "희망학과(\(desiredMajor))에 대한 게시글을 찾을 수 없습니다.",
+                                    preferredStyle: .alert
+                                )
+                                alert.addAction(UIAlertAction(title: "확인", style: .default))
+                                self.present(alert, animated: true)
+                            }
+
+                        case .failure(let error):
+                            print("❌ 학과 팁 목록 로드 실패: \(error.localizedDescription)")
+                        }
+                    })
+
+            case .failure(let error):
+                print("❌ 회원 정보 로드 실패: \(error.localizedDescription)")
+            }
+        }
+    }
     
     //MARK: - Setup UI
     private func setupNavigationBar() {
@@ -166,7 +235,11 @@ extension CommonBoardViewController: UITableViewDelegate, UITableViewDataSource 
         
         //  학과 게시판이면 MajorTipViewController로 이동
         if boardCategory == "MAJOR_TIPS" {
-            let nextVC = MajorTipViewController(postId: post.postId)
+            let nextVC = MajorTipViewController(
+                postId: post.postId,
+                shouldScrollToComments: false,
+                majorName: post.majorName
+            )
             navigationController?.pushViewController(nextVC, animated: true)
         } else {
             // 일반 게시판은 PostDetailViewController로 이동

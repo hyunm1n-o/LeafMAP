@@ -39,14 +39,25 @@ class MyLogDetailViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.addSubview(commonBoardView)
-        
+
         commonBoardView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
-        
+
         setupNavigationBar()
         setDelegate()
         callGetPosts()
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        // 게시글 작성/수정/삭제 후 돌아왔을 때 목록 새로고침
+        if posts.count > 0 {
+            posts.removeAll()
+            currentCursor = 0
+            hasNext = true
+            callGetPosts()
+        }
     }
     
     // MARK: - Network
@@ -173,7 +184,11 @@ extension MyLogDetailViewController: UITableViewDelegate, UITableViewDataSource 
         
         // 게시글 상세로 이동
         if post.boardType == "MAJOR_TIPS" {
-            let nextVC = MajorTipViewController(postId: post.postId)
+            let nextVC = MajorTipViewController(
+                postId: post.postId,
+                shouldScrollToComments: false,
+                majorName: post.majorName
+            )
             navigationController?.pushViewController(nextVC, animated: true)
         } else {
             let nextVC = PostDetailViewController(boardCategory: post.boardType, postId: post.postId)

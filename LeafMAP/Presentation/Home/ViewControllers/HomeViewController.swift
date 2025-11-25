@@ -11,6 +11,8 @@ class HomeViewController: UIViewController {
     // MARK: - Properties
     let memberService = MemberService()
     let postService = PostService()
+
+    private var currentMajor: String = ""
     
     //MARK: - Data
     private var tableviewData: [String] = [
@@ -60,13 +62,14 @@ class HomeViewController: UIViewController {
     func callGetMember() {
         memberService.getMember(completion: { [weak self] result in
             guard let self = self else { return }
-            
+
             switch result {
             case .success(let data):
                 homeView.name = data.nickname
                 homeView.major = data.major
+                self.currentMajor = data.major
                 print(data.nickname, data.major)
-                
+
             case .failure(let error):
                 print("Error: \(error.localizedDescription)")
             }
@@ -163,10 +166,11 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        
+
         switch indexPath.row {
         case 0:
-            goToBoard("학과 선택 꿀팁")
+            // 선배의 한마디 - 현재학과의 게시글로 이동하고 댓글 섹션으로 스크롤
+            navigateToCurrentMajorWithComments()
         case 1:
             goToBoard("맛집 게시판")
         case 2:
@@ -179,6 +183,58 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
         default:
             break
         }
+    }
+
+    private func navigateToCurrentMajorWithComments() {
+        print("선배의 한마디 - 현재학과: \(currentMajor)")
+
+        // 학과 팁 게시글 목록에서 현재학과 찾기
+        postService.getPostList(
+            boardType: "MAJOR_TIPS",
+            cursor: 0,
+            limit: 100,
+            completion: { [weak self] result in
+                guard let self = self else { return }
+
+                switch result {
+                case .success(let data):
+                    print("📋 전체 게시글 수: \(data.posts.count)")
+                    data.posts.forEach { post in
+                        print("  - majorName: '\(post.majorName)', postId: \(post.postId)")
+                    }
+
+                    // 현재학과와 일치하는 게시글 찾기 (정확히 일치 또는 포함)
+                    let matchingPost = data.posts.first { post in
+                        post.majorName == self.currentMajor ||
+                        post.majorName.contains(self.currentMajor) ||
+                        self.currentMajor.contains(post.majorName)
+                    }
+
+                    if let matchingPost = matchingPost {
+                        print("✅ 현재학과 게시글 찾음: postId=\(matchingPost.postId), majorName=\(matchingPost.majorName)")
+
+                        let nextVC = MajorTipViewController(
+                            postId: matchingPost.postId,
+                            shouldScrollToComments: false,
+                            majorName: matchingPost.majorName
+                        )
+                        self.navigationController?.pushViewController(nextVC, animated: true)
+                    } else {
+                        // 일치하는 게시글이 없을 경우 알림
+                        print("❌ 현재학과 '\(self.currentMajor)'와 일치하는 게시글 없음")
+                        let alert = UIAlertController(
+                            title: "알림",
+                            message: "현재학과(\(self.currentMajor))에 대한 게시글을 찾을 수 없습니다.",
+                            preferredStyle: .alert
+                        )
+                        alert.addAction(UIAlertAction(title: "확인", style: .default))
+                        self.present(alert, animated: true)
+                    }
+
+                case .failure(let error):
+                    print("❌ 학과 팁 목록 로드 실패: \(error.localizedDescription)")
+                }
+            })
     }
 }
 

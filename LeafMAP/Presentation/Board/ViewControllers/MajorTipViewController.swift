@@ -10,14 +10,18 @@ import UIKit
 class MajorTipViewController: UIViewController {
     // MARK: - Properties
     let postService = PostService()
+    let memberService = MemberService()
     let navigationBarManager = NavigationManager()
     let postId: Int
-    
+    let shouldScrollToComments: Bool
+    let majorName: String?
+
     // 게시글 데이터 & 댓글 데이터
     private var postDetail: PostDetailResponseDTO?
     private var comments: [PostCommentDTO] = []
     private var displayComments: [PostCommentDTO] = []
     private var replyMode: (isActive: Bool, parentCommentId: Int, parentAuthor: String) = (false, 0, "")
+    private var userDesiredMajor: String = ""
     
     // MARK: - View
     private lazy var majorTipView = MajorTipView().then {
@@ -27,8 +31,10 @@ class MajorTipViewController: UIViewController {
     }
     
     // MARK: - init
-    init(postId: Int) {
+    init(postId: Int, shouldScrollToComments: Bool = false, majorName: String? = nil) {
         self.postId = postId
+        self.shouldScrollToComments = shouldScrollToComments
+        self.majorName = majorName
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -39,17 +45,18 @@ class MajorTipViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.addSubview(majorTipView)
-        
+
         majorTipView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
-        
+
         addKeyboardObservers()
         setupNavigationBar()
         setDelegate()
         addTapGestureToDismissKeyboard()
+        callGetUserDesiredMajor()
         callGetMajoTipDetail()
-        
+
         // 테이블뷰 높이 observer 추가
         majorTipView.commentTableView.addObserver(self, forKeyPath: "contentSize", options: .new, context: nil)
     }
@@ -70,6 +77,21 @@ class MajorTipViewController: UIViewController {
     }
     
     // MARK: - Network
+    func callGetUserDesiredMajor() {
+        memberService.getMember { [weak self] result in
+            guard let self = self else { return }
+
+            switch result {
+            case .success(let data):
+                self.userDesiredMajor = data.desiredMajor
+                print("✅ 사용자 희망학과: \(self.userDesiredMajor)")
+
+            case .failure(let error):
+                print("❌ 회원 정보 로드 실패: \(error.localizedDescription)")
+            }
+        }
+    }
+
     func callGetMajoTipDetail() {
         postService.getPostDetail(
             boardType: "MAJOR_TIPS",
@@ -87,12 +109,20 @@ class MajorTipViewController: UIViewController {
                     
                     self.updateUI(with: data)
                     self.majorTipView.commentTableView.reloadData()
-                    
+
                     // 테이블뷰 높이 업데이트
                     DispatchQueue.main.async {
                         self.majorTipView.commentTableView.layoutIfNeeded()
+
+                        // 댓글 섹션으로 스크롤이 필요한 경우
+                        if self.shouldScrollToComments {
+                            // 레이아웃 완료 후 약간의 딜레이를 주고 스크롤
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                self.scrollToComments()
+                            }
+                        }
                     }
-                    
+
                     print("✅ 학과 팁 상세 로드 성공")
                 case .failure(let error):
                     print("❌ Error: \(error.localizedDescription)")
@@ -232,13 +262,15 @@ class MajorTipViewController: UIViewController {
             action: #selector(prevVC),
             tintColor: .black
         )
-        
+
+        // majorName이 있으면 즉시 표시, 없으면 기본값
+        let title = majorName ?? "학과 선택 꿀팁"
         navigationBarManager.setTitle(
             to: navigationItem,
-            title: "학과 선택 꿀팁",
+            title: title,
             textColor: .gray900
         )
-        
+
         if let navBar = navigationController?.navigationBar {
             navigationBarManager.addBottomLine(to: navBar)
         }
@@ -246,9 +278,19 @@ class MajorTipViewController: UIViewController {
     
     private func updateUI(with data: PostDetailResponseDTO) {
         guard let major = data.major else { return }
-        
+
+        // majorName이 초기에 없었다면 네비게이션 타이틀 업데이트
+        if majorName == nil {
+            navigationBarManager.setTitle(
+                to: navigationItem,
+                title: major.name,
+                textColor: .gray900
+            )
+        }
+
+        // 사용자의 희망학과를 표시
         majorTipView.configure(
-            hopeMajor: major.name,
+            hopeMajor: userDesiredMajor,
             keywords: major.keywords,
             description: major.description,
             curriculumUrl: major.curriculumUrl,
@@ -307,6 +349,11 @@ class MajorTipViewController: UIViewController {
     @objc
     private func dismissKeyboard() {
         view.endEditing(true)
+    }
+
+    // 댓글 섹션으로 스크롤
+    private func scrollToComments() {
+        majorTipView.scrollToComments()
     }
 }
 

@@ -45,14 +45,20 @@ class MyLogViewController: UIViewController {
     // MARK: - init
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         view.addSubview(myLogView)
         myLogView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
-        
+
         setupNavigationBar()
         setupTableView()
+        loadAllCounts()
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        // 게시글 작성/댓글 작성 후 돌아왔을 때 카운트 새로고침
         loadAllCounts()
     }
     
@@ -65,45 +71,49 @@ class MyLogViewController: UIViewController {
     // 모든 카운트 불러오기
     private func loadAllCounts() {
         let group = DispatchGroup()
-        
+
         // 작성된 게시글 수
         group.enter()
-        memberService.getMyPosts(cursor: 0, limit: 1) { [weak self] result in
+        memberService.getMyPosts(cursor: 0, limit: 1000) { [weak self] result in
             if case .success(let data) = result {
                 let publicPosts = data.posts.filter { $0.isPublic }
                 self?.logCounts[.myPosts] = publicPosts.count
+                print("✅ 작성된 게시글: \(publicPosts.count)개")
             }
             group.leave()
         }
-        
+
         // 전달된 게시글 수
         group.enter()
-        memberService.getMyPosts(cursor: 0, limit: 1) { [weak self] result in
+        memberService.getMyPosts(cursor: 0, limit: 1000) { [weak self] result in
             if case .success(let data) = result {
                 let pendingPosts = data.posts.filter { !$0.isPublic }
                 self?.logCounts[.pendingPosts] = pendingPosts.count
+                print("✅ 전달된 게시글: \(pendingPosts.count)개")
             }
             group.leave()
         }
-        
+
         // 댓글 단 게시글 수
         group.enter()
-        memberService.getMyComments(cursor: 0, limit: 1) { [weak self] result in
+        memberService.getMyComments(cursor: 0, limit: 1000) { [weak self] result in
             if case .success(let data) = result {
                 self?.logCounts[.myComments] = data.posts.count
+                print("✅ 내가 단 댓글: \(data.posts.count)개")
             }
             group.leave()
         }
-        
+
         // 추천한 게시글 수
         group.enter()
-        memberService.getLikedPosts(cursor: 0, limit: 1) { [weak self] result in
+        memberService.getLikedPosts(cursor: 0, limit: 1000) { [weak self] result in
             if case .success(let data) = result {
                 self?.logCounts[.likedPosts] = data.posts.count
+                print("✅ 추천한 게시글: \(data.posts.count)개")
             }
             group.leave()
         }
-        
+
         group.notify(queue: .main) { [weak self] in
             self?.myLogView.logTableView.reloadData()
         }

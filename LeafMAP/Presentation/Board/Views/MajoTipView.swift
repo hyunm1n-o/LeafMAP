@@ -376,4 +376,16 @@ class MajorTipView: UIView {
             commentTextField.placeholder = "댓글을 입력하세요"
         }
     }
+
+    // 댓글 섹션으로 스크롤
+    func scrollToComments() {
+        // 레이아웃 강제 업데이트
+        scrollView.layoutIfNeeded()
+        contentContainerView.layoutIfNeeded()
+
+        // commentTitleView의 위치를 계산하여 스크롤
+        let commentTitleFrame = commentTitleView.frame
+        let targetY = max(0, commentTitleFrame.origin.y - 80)
+        scrollView.setContentOffset(CGPoint(x: 0, y: targetY), animated: true)
+    }
 }
