@@ -33,6 +33,8 @@ class TitleTextField: UIView {
         $0.font = .systemFont(ofSize: 16)
         $0.textColor = .black
         $0.clearButtonMode = .never
+        $0.autocapitalizationType = .none
+        $0.autocorrectionType  = .no
     }
     
     private lazy var clearButton = UIButton(type: .custom).then {

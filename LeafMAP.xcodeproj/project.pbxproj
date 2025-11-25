@@ -177,6 +177,8 @@
 				DEVELOPMENT_TEAM = 2PPHF9K8UN;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = LeafMAP/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "풀잎맵";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -204,6 +206,8 @@
 				DEVELOPMENT_TEAM = 2PPHF9K8UN;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = LeafMAP/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "풀잎맵";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";

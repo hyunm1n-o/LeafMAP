@@ -324,7 +324,7 @@ class PostDetailView: UIView {
         }
         
         certificationBadge.snp.makeConstraints {
-            $0.top.equalTo(titleLabel)
+            $0.centerY.equalTo(titleLabel)
             $0.leading.equalTo(titleLabel.snp.trailing).offset(8)
             $0.size.equalTo(18)
         }

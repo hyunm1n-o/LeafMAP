@@ -35,7 +35,6 @@ class TestLoadingViewController: UIViewController {
             $0.edges.equalToSuperview()
         }
     
-        navigationController?.setNavigationBarHidden(true, animated: false)
         loadingView.showLoadingIndicator()
         callSubmitAnswers()
         setupNavigationBar()
